@@ -245,7 +245,11 @@ WHERE question_id = ANY(@ids);";
             const string sql = @"
 SELECT q.question_id, q.question_text
 FROM question q
-WHERE NOT EXISTS (SELECT 1 FROM question_embeddings e WHERE e.question_id = q.question_id)
+WHERE (
+        NOT EXISTS (SELECT 1 FROM question_embeddings e WHERE e.question_id = q.question_id)
+     OR NOT EXISTS (SELECT 1 FROM question_math_profile p
+                    WHERE p.question_id = q.question_id AND p.profile_version >= 1)
+      )
   AND q.question_id <> ALL(@skipIds)
 ORDER BY q.question_id
 LIMIT @limit;";

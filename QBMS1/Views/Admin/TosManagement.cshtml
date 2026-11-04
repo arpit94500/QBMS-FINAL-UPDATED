@@ -1,0 +1,475 @@
+﻿@*@model List<QBMS.Application.Models.TosViewModel>
+
+    @{
+        ViewData["Title"] = "TOS Management";
+    }
+
+    <div class="dashboard-container">
+
+        <div class="dashboard-header">
+
+            <div>
+                <h1>TOS Management</h1>
+
+                <p>
+                    Table of Specification synchronized
+                    from INOES
+                </p>
+            </div>
+
+            <div>
+                <a asp-controller="Admin"
+                   asp-action="Dashboard"
+                   class="back-button">
+                    Dashboard
+                </a>
+            </div>
+
+        </div>
+
+        <div class="tos-toolbar">
+
+            <span>
+                Total TOS Records:
+                <strong>@Model.Count</strong>
+            </span>
+
+            <a asp-controller="Admin"
+               asp-action="TosSync"
+               class="sync-button">
+                Sync TOS
+            </a>
+
+        </div>
+
+        <div class="table-container">
+
+            <table class="tos-table">
+
+                <thead>
+                    <tr>
+
+                        <th>Exam</th>
+
+                        <th>Paper</th>
+
+                        <th>Section</th>
+
+                        <th>Subsection</th>
+
+                        <th>Topic</th>
+
+                        <th>Easy</th>
+
+                        <th>Medium</th>
+
+                        <th>Hard</th>
+
+                        <th>Total</th>
+
+                        <th>Status</th>
+
+                        <th>Action</th>
+
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    @item.ExamName
+                                </td>
+
+                                <td>
+                                    @item.PaperName
+                                </td>
+
+                                <td>
+                                    @item.SectionName
+                                </td>
+
+                                <td>
+                                    @item.SubsectionName
+                                </td>
+
+                                <td>
+                                    @item.TopicName
+                                </td>
+
+                                <td>
+                                    @item.TopicEasyQuestion
+                                    <br />
+                                    <small>
+                                        @item.TopicEasyMarks marks
+                                    </small>
+                                </td>
+
+                                <td>
+                                    @item.TopicMediumQuestion
+                                    <br />
+                                    <small>
+                                        @item.TopicMediumMarks marks
+                                    </small>
+                                </td>
+
+                                <td>
+                                    @item.TopicHardQuestion
+                                    <br />
+                                    <small>
+                                        @item.TopicHardMarks marks
+                                    </small>
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        @item.TotalQuestions
+                                    </strong>
+                                    <br />
+                                    <small>
+                                        @item.TotalMarks marks
+                                    </small>
+                                </td>
+
+                                <td>
+
+                                    @if (item.IsActive==1)
+                                    {
+                                        <span class="status-active">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-inactive">
+                                            Inactive
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <a href="#"
+                                       class="assign-button">
+                                        Assign
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="11"
+                                class="empty-message">
+
+                                No TOS records found.
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>*@
+
+
+
+
+@model QBMS.Application.Models.TosAssignmentViewModel
+
+@{
+    ViewData["Title"] = "TOS Assignment";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>TOS Assignment</h1>
+
+            <p>
+                Select the required hierarchy level
+                for assignment.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="TosAssignmentManagement"
+               class="back-button">
+                Assignment Management
+            </a>
+            <a asp-controller="Admin"
+               asp-action="Dashboard"
+               class="back-button">
+                Dashboard
+            </a>
+        </div>
+
+    </div>
+    <div class="glass-card">
+        <h3 class="panel-heading">1. Assignment type</h3>
+    <div class="form-row">
+
+        <div class="form-group">
+
+            <label>
+                Assignment Level
+            </label>
+
+            <select id="ddlAssignmentLevel"
+                    class="qbms-select">
+
+                <option value="">
+                    Select Level
+                </option>
+
+                <option value="PAPER">
+                    Paper
+                </option>
+
+                <option value="SECTION">
+                    Section
+                </option>
+
+                <option value="SUBSECTION">
+                    SubSection
+                </option>
+
+                <option value="TOPIC">
+                    Topic
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>
+                Multiplication Factor
+            </label>
+
+            <input type="number"
+                   id="txtFactor"
+                   class="qbms-input"
+                   value="1"
+                   min="1"
+                   step="1" />
+
+        </div>
+
+    </div>
+    </div>
+
+    <div class="assignment-panel">
+        <h3 class="panel-heading">2. Scope (hierarchy)</h3>
+
+        <p class="form-hint" id="scopeHint">Choose the assignment level first; only the hierarchy fields it needs are shown.</p>
+
+        <div class="form-row">
+
+            <div class="form-group scope-field" data-min-rank="1" hidden>
+                <label>Exam</label>
+
+                <select id="ddlExam"
+                        class="qbms-select">
+
+                    <option value="">
+                        Select Exam
+                    </option>
+
+                    @foreach (var item in Model.Exams)
+                    {
+                        <option value="@item.Id">
+                            @item.Name
+                        </option>
+                    }
+
+                </select>
+            </div>
+
+
+            <div class="form-group scope-field" data-min-rank="1" hidden>
+                <label>Paper</label>
+
+                <select id="ddlPaper"
+                        class="qbms-select"
+                        disabled>
+
+                    <option value="">
+                        Select Paper
+                    </option>
+
+                </select>
+            </div>
+
+        </div>
+
+
+        <div class="form-row">
+
+            <div class="form-group scope-field" data-min-rank="2" hidden>
+                <label>Section</label>
+
+                <select id="ddlSection"
+                        class="qbms-select"
+                        disabled>
+
+                    <option value="">
+                        Select Section
+                    </option>
+
+                </select>
+            </div>
+
+
+            <div class="form-group scope-field" data-min-rank="3" hidden>
+                <label>SubSection</label>
+
+                <select id="ddlSubsection"
+                        class="qbms-select"
+                        disabled>
+
+                    <option value="">
+                        Select SubSection
+                    </option>
+
+                </select>
+            </div>
+
+        </div>
+
+
+        <div class="form-row">
+
+            <div class="form-group scope-field" data-min-rank="4" hidden>
+
+                <label>Topic</label>
+
+                <select id="ddlTopic"
+                        class="qbms-select"
+                        disabled>
+
+                    <option value="">
+                        Select Topic
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <hr />
+        <h3 class="panel-heading">3. Responsible users</h3>
+
+
+
+
+
+        <div class="form-row">
+
+            <div class="form-group">
+
+                <label>
+                    Setter
+                </label>
+
+                <select id="ddlSetter"
+                        class="qbms-select">
+
+                    <option value="">
+                        Select Setter
+                    </option>
+                    @foreach (var item in Model.Setters)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Vetter
+                </label>
+
+                <select id="ddlVetter"
+                        class="qbms-select">
+
+                    <option value="">
+                        Select Vetter
+                    </option>
+                    @foreach (var item in Model.Vetters)
+                    {
+                        <option value="@item.Id">@item.Name</option>
+                    }
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <div class="assignment-summary">
+
+            <h3>Assignment Scope</h3>
+
+            <div id="assignmentDescription">
+                Select the hierarchy and assignment
+                level.
+            </div>
+
+        </div>
+
+
+        <button type="button"
+                id="btnAssign"
+                class="sync-button qbms-btn">
+
+            Assign
+
+        </button>
+        <div id="assignmentMessage" class="assignment-message"></div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script>
+        window.qbmsUrls = {
+            getPapers: '@Url.Action("GetPapers","Admin")',
+            getSections: '@Url.Action("GetSections","Admin")',
+            getSubsections: '@Url.Action("GetSubsections","Admin")',
+            getTopics: '@Url.Action("GetTopics","Admin")',
+            createAssignment: '@Url.Action("CreateAssignment","Admin")'
+        };
+    </script> 
+    <script src="~/js/tos-assignment.js"></script>
+}

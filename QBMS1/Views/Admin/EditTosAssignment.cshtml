@@ -1,0 +1,128 @@
+﻿@model QBMS.Application.Models.ReassignTosAssignmentViewModel
+
+@{
+    ViewData["Title"] = "Reassign TOS Assignment";
+}
+<style>
+    * {
+        color:black;
+    }
+</style>
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h3 class="mb-0">Reassign TOS Assignment</h3>
+        </div>
+
+        <div class="card-body">
+            <div asp-validation-summary="All"
+                 class="text-danger mb-3"></div>
+
+            <div class="alert alert-info">
+                Completed questions will not be transferred or reset.
+                Only unfinished Setter questions are transferred when the
+                checkbox below is selected. Pending Vetter reviews retain
+                their current status.
+            </div>
+
+            <dl class="row">
+                <dt class="col-md-3">Assignment ID</dt>
+                <dd class="col-md-9">@Model.AssignmentId</dd>
+
+                <dt class="col-md-3">Assignment Level</dt>
+                <dd class="col-md-9">@Model.AssignmentLevel</dd>
+
+                <dt class="col-md-3">Exam</dt>
+                <dd class="col-md-9">@Model.ExamName</dd>
+
+                <dt class="col-md-3">Paper</dt>
+                <dd class="col-md-9">@Model.PaperName</dd>
+
+                <dt class="col-md-3">Section</dt>
+                <dd class="col-md-9">@Model.SectionName</dd>
+
+                <dt class="col-md-3">SubSection</dt>
+                <dd class="col-md-9">@Model.SubsectionName</dd>
+
+                <dt class="col-md-3">Topic</dt>
+                <dd class="col-md-9">@Model.TopicName</dd>
+                @* <dt class="col-md-3">Multiplication Factor</dt>
+                <dd class="col-md-9">@Model.MultiplicationFactor</dd> *@
+
+            </dl>
+
+            <hr />
+
+            <form asp-action="EditTosAssignment" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       asp-for="AssignmentId" />
+
+                <div class="form-group">
+                    <label>Current Setter ID</label>
+                    <input class="form-control"
+                           value="@Model.CurrentSetterUserId"
+                           readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>New Setter</label>
+                    <select asp-for="NewSetterUserId"
+                            class="form-control"
+                            required>
+                        <option value="">-- Select Setter --</option>
+                        @foreach (var setter in Model.Setters)
+                        {
+                            <option value="@setter.Id">
+                                @setter.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Vetter ID</label>
+                    <input class="form-control"
+                           value="@(Model.CurrentVetterUserId?.ToString() ?? "Not assigned")"
+                           readonly />
+                </div>
+
+                <div class="form-group">
+                    <label>New Vetter</label>
+                    <select asp-for="NewVetterUserId"
+                            class="form-control"
+                            required>
+                        <option value="">-- Select Vetter --</option>
+                        @foreach (var vetter in Model.Vetters)
+                        {
+                            <option value="@vetter.Id">
+                                @vetter.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="TransferUnfinishedQuestions"
+                           class="form-check-input" />
+                    <label asp-for="TransferUnfinishedQuestions"
+                           class="form-check-label">
+                        Transfer unfinished questions to the new Setter
+                    </label>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm('Save the new Setter and Vetter for this assignment?');">
+                    Save Reassignment
+                </button>
+
+                <a asp-action="TosAssignmentManagement"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </form>
+        </div>
+    </div>
+</div>

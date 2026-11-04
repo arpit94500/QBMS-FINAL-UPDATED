@@ -1,0 +1,33 @@
+@* Math popup + rendering for pages with editors (Setter create/edit, Vetter review). Include once per page. *@
+<div id="questionMathModal" class="question-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="questionMathTitle">
+    <div class="question-modal-content">
+        <h3 id="questionMathTitle">Insert LaTeX Equation</h3>
+
+        <label for="questionMathInput">LaTeX formula</label>
+        <textarea id="questionMathInput" rows="3" placeholder="Example: E = mc^2"></textarea>
+
+        <div class="latex-examples">
+            <span>Examples:</span>
+            <button type="button" class="latex-example" data-latex="\frac{a}{b}">a/b</button>
+            <button type="button" class="latex-example" data-latex="x^{2}+y^{2}=r^{2}">x²+y²=r²</button>
+            <button type="button" class="latex-example" data-latex="\sqrt{x^{2}+1}">√</button>
+            <button type="button" class="latex-example" data-latex="\sum_{i=1}^{n} i">∑</button>
+            <button type="button" class="latex-example" data-latex="\int_{0}^{1} x\,dx">∫</button>
+        </div>
+
+        <label class="latex-display-toggle">
+            <input type="checkbox" id="questionMathDisplayMode" /> Show as a separate line (display mode)
+        </label>
+
+        <div class="preview-label">Live preview</div>
+        <div id="questionMathLivePreview" class="latex-preview" aria-live="polite">Enter a formula to see its preview.</div>
+        <div id="questionMathError" class="latex-error" role="alert"></div>
+
+        <div class="modal-actions">
+            <button type="button" id="questionCancelMath" class="modal-btn cancel-btn">Cancel</button>
+            <button type="button" id="questionInsertMath" class="modal-btn confirm-btn">Insert</button>
+        </div>
+    </div>
+</div>
+
+<partial name="_MathRender" />

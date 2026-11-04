@@ -1,0 +1,107 @@
+﻿@model List<QBMS.Application.Models.VetterExamSummaryViewModel>
+
+@{
+    ViewData["Title"] = "Vetter Dashboard";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>Vetter Dashboard</h1>
+
+            <p>
+                Questions waiting for vetting
+            </p>
+        </div>
+
+        <div>
+            <span class="role-badge">
+                VETTER
+            </span>
+        </div>
+
+    </div>
+
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["InfoMessage"]
+        </div>
+    }
+
+
+    <div class="table-container">
+
+        @if (Model != null && Model.Count > 0)
+        {
+            <table class="tos-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>No. of Questions Pending for Vetting</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var exam in Model)
+                    {
+                        <tr>
+
+                            <td>
+                                @exam.ExamName
+                            </td>
+
+                            <td>
+                                @exam.PendingCount
+                            </td>
+
+                            <td>
+                                <a asp-controller="Vetter"
+                                   asp-action="ReviewQuestion"
+                                   asp-route-examId="@exam.MainExamId"
+                                   class="assign-button"
+                                   style="text-decoration:none;">
+                                    Review
+                                </a>
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+        }
+        else
+        {
+            <div class="empty-message"
+                 style="padding:20px; text-align:center;">
+                No question pending for vetting.
+            </div>
+        }
+
+    </div>
+
+</div>

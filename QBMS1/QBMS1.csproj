@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+	  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	  <NoWarn>$(NoWarn);NU1605</NoWarn>
+	  <NoWarn>$(NoWarn);NU1103</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Views\Setter\CreateQuestion.cshtml" />
+    <None Include="Views\Setter\Dashboard.cshtml" />
+    <None Include="Views\Setter\EditQuestion - Copy.cshtml" />
+    <None Include="Views\Setter\EditQuestion.cshtml" />
+    <None Include="Views\Setter\UploadQuestions.cshtml" />
+    <None Include="Views\Shared\Error.cshtml" />
+    <None Include="Views\Shared\_Layout.cshtml" />
+    <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+    <None Include="Views\Vetter\Dashboard.cshtml" />
+    <None Include="Views\Vetter\ReviewQuestion.cshtml" />
+    <None Include="wwwroot\lib\MathJax-3.2.2\.github\FUNDING.yml" />
+    <None Include="wwwroot\lib\MathJax-3.2.2\.github\ISSUE_TEMPLATE\bug_report.md" />
+    <None Include="wwwroot\lib\MathJax-3.2.2\.github\ISSUE_TEMPLATE\feature_request.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient.Extensions.Abstractions" Version="7.0.2" />
+    <PackageReference Include="Npgsql" Version="7.0.10" />
+    <PackageReference Include="runtime.native.System.Data.SqlClient.sni" Version="4.7.0" />
+    <PackageReference Include="runtime.win-arm64.runtime.native.System.Data.SqlClient.sni" Version="4.4.0" />
+    <PackageReference Include="runtime.win-x64.runtime.native.System.Data.SqlClient.sni" Version="4.4.0" />
+    <PackageReference Include="runtime.win-x86.runtime.native.System.Data.SqlClient.sni" Version="4.4.0" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QBMS.Application\QBMS.Application.csproj" />
+    <ProjectReference Include="..\QBMS.Infrastructure\QBMS.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

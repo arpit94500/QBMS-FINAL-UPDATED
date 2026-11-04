@@ -1,0 +1,144 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int code = ViewBag.StatusCode == null
+        ? 500
+        : (int)ViewBag.StatusCode;
+
+    string heading;
+    string message;
+    string symbol;
+
+    if (code == 404)
+    {
+        heading = "Page Not Found";
+        message = "The page you are looking for does not exist or may have been moved.";
+        symbol = "404";
+    }
+    else if (code == 403)
+    {
+        heading = "Access Denied";
+        message = "You do not have permission to access this page.";
+        symbol = "403";
+    }
+    else
+    {
+        heading = "Request Error";
+        message = "Your request could not be completed.";
+        symbol = code.ToString();
+    }
+}
+
+<style>
+    .error-page {
+        min-height: 75vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 16px;
+    }
+
+    .error-card {
+        width: 100%;
+        max-width: 650px;
+        padding: 45px 30px;
+        text-align: center;
+        border: 1px solid rgba(100, 140, 180, .3);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, .75);
+        box-shadow: 0 15px 45px rgba(20, 50, 80, .12);
+        backdrop-filter: blur(14px);
+    }
+
+    .error-code {
+        font-size: clamp(64px, 12vw, 100px);
+        font-weight: 800;
+        letter-spacing: 4px;
+        line-height: 1.1;
+        color: #1769aa;
+        margin-bottom: 18px;
+    }
+
+    .error-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #173752;
+        margin-bottom: 14px;
+    }
+
+    .error-message {
+        color: #52677a;
+        font-size: 16px;
+        line-height: 1.7;
+        margin-bottom: 28px;
+    }
+
+    .error-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .error-btn {
+        display: inline-block;
+        padding: 11px 22px;
+        border-radius: 9px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 1px solid #1769aa;
+    }
+
+    .error-btn-primary {
+        background: #1769aa;
+        color: white;
+    }
+
+    .error-btn-secondary {
+        background: transparent;
+        color: #1769aa;
+    }
+
+    .error-btn:hover {
+        opacity: .85;
+        color: inherit;
+    }
+
+    @@media (prefers-color-scheme: dark) {
+        .error-card {
+            background: rgba(28, 43, 58, .85);
+            border-color: rgba(140, 180, 220, .25);
+        }
+
+        .error-title {
+            color: #e7f1fa;
+        }
+
+        .error-message {
+            color: #c1d0df;
+        }
+    }
+</style>
+
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-code">@symbol</div>
+
+        <h1 class="error-title">@heading</h1>
+
+        <p class="error-message">@message</p>
+
+        <div class="error-actions">
+            <a asp-controller="Account"
+               asp-action="Login"
+               class="error-btn error-btn-primary">
+                Go to Login
+            </a>
+
+            <a href="javascript:history.back()"
+               class="error-btn error-btn-secondary">
+                Go Back
+            </a>
+        </div>
+    </div>
+</div>

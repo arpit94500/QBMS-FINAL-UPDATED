@@ -1,0 +1,416 @@
+﻿@model QBMS.Application.Models.SetterDashboardViewModel
+
+@{
+    ViewData["Title"] = "Setter Dashboard";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>Setter Dashboard</h1>
+
+            <p>
+                Question creation assignments
+            </p>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            @* <a asp-controller="Setter" asp-action="UploadQuestions" class="assign-button">
+                Template Download / Upload page
+            </a> *@
+            <span class="role-badge">
+                SETTER
+            </span>
+        </div>
+
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message" style="color:#b02a37;margin-bottom:15px;">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <div class="table-container">
+
+        <table class="tos-table">
+
+            <thead>
+                <tr>
+                    <th>Exam</th>
+                    <th>Paper</th>
+                    <th>Section</th>
+                    <th>SubSection</th>
+                    <th style="min-width:190px;">Progress</th>
+                    <th>Download Template</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (Model != null && Model.Assignments.Count > 0)
+                {
+                    foreach (var item in Model.Assignments)
+                    {
+                        <tr>
+
+                            <td>@item.ExamName</td>
+
+                            <td>@item.PaperName</td>
+
+                            <td>@item.SectionName</td>
+
+                            <td>@item.SubsectionName</td>
+
+                            <td data-export="@item.ProgressPercent%">
+                                <div class="progress-track" title="@item.ProgressPercent%">
+                                    <div class="progress-fill" style="width:@(item.ProgressPercent)%"></div>
+                                </div>
+                                <small>@item.ProgressPercent% (@item.CreatedQuota / @item.TotalQuota)</small>
+                            </td>
+                            <td>
+                                <div class="setter-row-actions">
+                                    <a asp-controller="Setter"
+                                       asp-action="DownloadTosExcelTemplate"
+                                       asp-route-assignmentId="@item.AssignmentId"
+                                       class="assign-button btn btn-success">
+                                        Download Excel
+                                    </a>
+
+                                    <a asp-controller="Setter"
+                                       asp-action="DownloadTosWordTemplate"
+                                       asp-route-assignmentId="@item.AssignmentId"
+                                       class="assign-button btn btn-primary">
+                                        Download Word
+                                    </a>
+                                    </div>
+                            </td>
+
+                            <td>
+                                <div class="setter-row-actions">
+
+                                    <a asp-controller="Setter"
+                                       asp-action="CreateQuestion"
+                                       asp-route-assignmentId="@item.AssignmentId"
+                                       class="assign-button btn btn-warning">
+                                        Create Question
+                                    </a>
+                                    
+
+                                    <a asp-controller="Setter"
+                                       asp-action="UploadQuestions"
+                                       asp-route-assignmentId="@item.AssignmentId"
+                                       asp-route-mode="excel"
+                                       class="assign-button btn btn-success">
+                                        Upload Excel
+                                    </a>
+
+                                    <a asp-controller="Setter"
+                                       asp-action="UploadQuestions"
+                                       asp-route-assignmentId="@item.AssignmentId"
+                                       asp-route-mode="word"
+                                       class="assign-button btn btn-primary">
+                                        Upload Word
+                                    </a>
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6"
+                            class="empty-message">
+
+                            No assignments available.
+
+                        </td>
+                    </tr>
+                }
+
+                 @if (Model.CompletedAssignments != null && Model.CompletedAssignments.Count > 0)
+                {
+                    foreach (var item in Model.CompletedAssignments)
+                    {
+                        <tr>
+                            <td>@item.ExamName</td>
+                            <td>@item.PaperName</td>
+                            <td>@item.SectionName</td>
+                            <td>@item.SubsectionName</td>
+                            <td>
+                                <div class="progress-track" title="@item.ProgressPercent%">
+                                    <div class="progress-fill" style="width:@(item.ProgressPercent)%"></div>
+                                </div>
+                                <small>@item.ProgressPercent% (@item.CreatedQuota / @item.TotalQuota)</small>
+                            </td>
+                            <td></td>
+                            <td>Completed</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="empty-message">No completed assignments yet.</td></tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <div class="dashboard-header" style="margin-top:30px;">
+        <div>
+            <h2>Questions Requiring Correction</h2>
+            <p>Only questions rejected by the Vetter or Admin are shown.</p>
+        </div>
+    </div>
+
+
+
+<div class="table-container">
+
+    <table class="tos-table">
+
+        <thead>
+
+            <tr>
+                <th>Question ID</th>
+                <th>Topic</th>
+                <th>Difficulty</th>
+                <th>Question</th>
+                <th>Option 1</th> <th>Option 2</th> <th>Option 3</th> <th>Option 4</th> <th>Correct Answer</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var question in Model.Questions)
+            {
+            <tr>
+
+                <td>
+                    @question.QuestionId
+                </td>
+
+                <td>
+                    @question.TopicName
+                </td>
+
+                <td>
+                    @question.DifficultyLevel
+                </td>
+
+                <td style="min-width:350px;">
+                    <span class="qbms-math-content">@Html.Raw(@question.QuestionText)</span>
+                </td>
+                <td>
+                    <span class="qbms-math-content">@Html.Raw(@question.Option1)</span>
+                </td><td>
+                    <span class="qbms-math-content">@Html.Raw(@question.Option2)</span>
+                </td><td>
+                    <span class="qbms-math-content">@Html.Raw(@question.Option3)</span>
+                </td><td>
+                    <span class="qbms-math-content">@Html.Raw(@question.Option4)</span>
+                </td><td>
+                    <span class="qbms-math-content">@Html.Raw(@question.CorrectAnswer)</span>
+                </td>
+
+
+                <td>
+                    @question.Status
+                </td>
+
+                <td>
+
+                    @if (
+                       question.Status == "VETTER_REJECTED" ||
+                       question.Status == "ADMIN_REJECTED")
+                    {
+                        <a asp-controller="Setter"
+                           asp-action="EditQuestion"
+                           asp-route-questionId="@question.QuestionId"
+                           class="assign-button">
+
+                            Correct Question
+
+                        </a>
+                    }
+
+
+                </td>
+
+
+            </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>
+
+    @{
+        var uploadBatches = Model.UploadBatches ?? new List<QBMS.Application.Models.UploadBatchViewModel>();
+    }
+
+    @if (uploadBatches.Count > 0)
+    {
+        <div class="dashboard-header" style="margin-top:30px;">
+            <div>
+                <h2>Duplicate Check Status</h2>
+                <p>
+                    Uploaded Word / Excel files are saved and sent to the Vetter only after every question
+                    passes the duplicate check. Come back here to follow the progress.
+                </p>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="tos-table">
+                <thead>
+                    <tr>
+                        <th>Uploaded</th>
+                        <th>File</th>
+                        <th>Questions</th>
+                        <th>Duplicate Check Progress</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var batch in uploadBatches)
+                    {
+                        <tr>
+                            <td>@batch.UploadedAt.ToString("dd-MMM-yyyy HH:mm")</td>
+                            <td>@batch.FileName</td>
+                            <td>@batch.TotalQuestions</td>
+                            <td style="min-width:200px;">
+                                <div style="background:#e9ecef;border-radius:4px;height:16px;overflow:hidden;">
+                                    <div style="background:@(batch.DuplicateCount > 0 ? "#dc3545" : "#198754");width:@(batch.ProgressPercent)%;height:16px;"></div>
+                                </div>
+                                <small>@batch.ProgressPercent% (@batch.ProcessedQuestions / @batch.TotalQuestions)</small>
+                            </td>
+                            <td>
+                                @switch (batch.Status)
+                                {
+                                    case "PENDING":
+                                        <span>Waiting for duplicate check</span>
+                                        break;
+                                    case "CHECKING":
+                                        <span>Checking for duplicates...</span>
+                                        break;
+                                    case "SAVING":
+                                        <span>Clear - saving and sending to Vetter...</span>
+                                        break;
+                                    case "SAVED":
+                                        <strong style="color:#198754;">Cleared - saved and sent to Vetter</strong>
+                                        break;
+                                    case "DUPLICATES_FOUND":
+                                        <strong style="color:#dc3545;">Duplicates found - not saved</strong>
+                                        break;
+                                    default:
+                                        <strong style="color:#dc3545;">Not saved</strong>
+                                        break;
+                                }
+                                @if (!string.IsNullOrWhiteSpace(batch.Message))
+                                {
+                                    <div><small>@batch.Message</small></div>
+                                }
+                            </td>
+                            <td>
+                                @if (batch.IsReportReady && batch.Status!="SAVED")
+                                {
+                                    <a asp-controller="Setter"
+                                       asp-action="DownloadDuplicateReport"
+                                       asp-route-batchId="@batch.BatchId"
+                                       class="assign-button btn btn-danger">
+                                        Download @(batch.FileType == "DOCX" ? "Word" : "Excel") with Duplicates
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (uploadBatches.Any(b => b.IsInProgress))
+        {
+            <script>
+                // Refresh the status while a duplicate check is still running.
+                setTimeout(function () { window.location.reload(); }, 10000);
+            </script>
+        }
+    }
+
+    @* <div class="dashboard-header" style="margin-top:30px;">
+        <div>
+            <h2>Completed Exams / Assignments</h2>
+            <p>Quota completed. No question content is displayed here.</p>
+        </div>
+    </div> *@
+
+@*     <div class="table-container">
+        <table class="tos-table">
+            <thead>
+                <tr>
+                    <th>Exam</th>
+                    <th>Paper</th>
+                    <th>Section</th>
+                    <th>SubSection</th>
+                    <th style="min-width:190px;">Progress</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.CompletedAssignments != null && Model.CompletedAssignments.Count > 0)
+                {
+                    foreach (var item in Model.CompletedAssignments)
+                    {
+                        <tr>
+                            <td>@item.ExamName</td>
+                            <td>@item.PaperName</td>
+                            <td>@item.SectionName</td>
+                            <td>@item.SubsectionName</td>
+                            <td>
+                                <div class="progress-track" title="@item.ProgressPercent%">
+                                    <div class="progress-fill" style="width:@(item.ProgressPercent)%"></div>
+                                </div>
+                                <small>@item.ProgressPercent% (@item.CreatedQuota / @item.TotalQuota)</small>
+                            </td>
+                            <td>Completed</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="6" class="empty-message">No completed assignments yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div> *@
+
+    
+
+
+</div>
+
+<partial name="_MathRender" />

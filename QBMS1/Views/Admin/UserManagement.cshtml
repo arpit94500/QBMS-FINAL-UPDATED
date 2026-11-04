@@ -1,0 +1,182 @@
+﻿@model List<QBMS.Application.Models.UserListViewModel>
+
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>User Management</h1>
+
+            <p>
+                Manage QBMS users and roles.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="Dashboard"
+               class="back-button">
+                Dashboard
+            </a>
+
+            <a asp-controller="Admin"
+               asp-action="CreateUser"
+               class="sync-button"
+               style="text-decoration:none;">
+                Add User
+            </a>
+        </div>
+
+    </div>
+
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <div class="table-container">
+
+        <table class="tos-table">
+
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Personnel No</th>
+                    <th>User Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @if (Model != null &&
+                    Model.Count > 0)
+                {
+                    foreach (var user in Model)
+                    {
+                        <tr>
+
+                            <td>
+                                @user.UserId
+                            </td>
+
+                            <td>
+                                @user.PersonnelNo
+                            </td>
+
+                            <td>
+                                @user.UserName
+                            </td>
+
+                            <td>
+                                @user.RoleName
+                            </td>
+
+                            <td>
+
+                                @if (user.IsActive)
+                                {
+                                    <span class="status-active">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-inactive">
+                                        Inactive
+                                    </span>
+                                }
+
+                            </td>
+
+                            <td>
+
+                                <a asp-controller="Admin"
+                                   asp-action="EditUser"
+                                   asp-route-id="@user.UserId"
+                                   class="assign-button btn btn-info"
+                                   style="text-decoration:none;">
+
+                                    Edit
+
+                                </a>
+
+                                <form asp-controller="Admin"
+                                      asp-action="UpdateUserStatus"
+                                      method="post"
+                                      style="display:inline;">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="userId"
+                                           value="@user.UserId" />
+
+                                    <input type="hidden"
+                                           name="isActive"
+                                           value="@(!user.IsActive)" />
+
+                                    @if (user.IsActive)
+                                    {
+                                        <button type="submit"
+                                                class="assign-button btn btn-warning">
+
+                                            Deactivate
+
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit"
+                                                class="assign-button btn btn-danger">
+
+                                            Activate
+
+                                        </button>
+                                    }
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="6"
+                            class="empty-message">
+
+                            No users found.
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>

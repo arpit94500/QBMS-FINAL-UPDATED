@@ -1,0 +1,20 @@
+﻿@model QBMS.Application.Models.CorrectAnswerSelectorViewModel
+
+<select id="correctAnswerSelect"
+        class="form-control"
+        data-option-editors="@Model.OptionEditorIds"
+        data-sync-editor="@Model.SyncEditorId"
+        data-sync-hidden="@Model.HiddenFieldId">
+
+    <option value="">-- Select Correct Option --</option>
+
+    @for (int i = 1; i <= 4; i++)
+    {
+        <option value="@i" selected="@(Model.SelectedOption == i)">Option @i</option>
+    }
+
+</select>
+
+@* Not shown. The existing editor scripts read the answer from this element
+   on submit; qbms-correct-answer.js fills it with the selected option. *@
+<div id="@Model.SyncEditorId" style="display:none;" aria-hidden="true">@Html.Raw(Model.LegacyContent)</div>

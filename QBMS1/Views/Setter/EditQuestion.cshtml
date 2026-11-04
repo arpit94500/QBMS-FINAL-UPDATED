@@ -1,0 +1,536 @@
+﻿@model QBMS.Application.Models.EditQuestionViewModel
+
+@{
+    ViewData["Title"] = "Edit Question";
+}
+
+<link rel="stylesheet"
+      href="~/css/question-editor.css" />
+
+<div class="container mt-4 mb-5">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header qbms-question-header">
+            <h4 class="mb-0">
+                Edit Question
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <!-- ================================================= -->
+            <!-- REVIEWER REMARKS                                   -->
+            <!-- ================================================= -->
+
+            @if (!string.IsNullOrWhiteSpace(Model.LatestRemarks))
+            {
+                <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                    <strong>Reviewer Remarks:</strong>
+                    <br />
+                    @Html.Raw(Model.LatestRemarks)
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+
+            <form asp-controller="Setter"
+                  asp-action="EditQuestion"
+                  method="post"
+                  id="questionForm"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <!-- ================================================= -->
+                <!-- QUESTION ID (HIDDEN)                              -->
+                <!-- ================================================= -->
+
+                <input type="hidden"
+                       asp-for="QuestionId" />
+
+                <!-- ================================================= -->
+                <!-- HIERARCHY DISPLAY                                  -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title">
+                    Question Mapping
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Exam
+                        </label>
+
+                        <input type="text"
+                               class="form-control qbms-readonly"
+                               value="@Model.ExamName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Paper
+                        </label>
+
+                        <input type="text"
+                               class="form-control qbms-readonly"
+                               value="@Model.PaperName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Section
+                        </label>
+
+                        <input type="text"
+                               class="form-control qbms-readonly"
+                               value="@Model.SectionName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            SubSection
+                        </label>
+
+                        <input type="text"
+                               class="form-control qbms-readonly"
+                               value="@Model.SubsectionName"
+                               readonly />
+                    </div>
+
+                </div>
+
+                <!-- ================================================= -->
+                <!-- QUESTION TYPE / DIFFICULTY                       -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title mt-3">
+                    Question Details
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="QuestionType"
+                               class="form-label">
+
+                            Question Type
+
+                        </label>
+
+                        <select asp-for="QuestionType"
+                                class="form-control"
+                                disabled>
+
+                            <option value="SUBJECTIVE">
+                                SUBJECTIVE
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label asp-for="DifficultyLevel"
+                               class="form-label">
+
+                            Difficulty
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <select asp-for="DifficultyLevel"
+                                class="form-control"
+                                required>
+
+                            @if (Model.Difficulties != null)
+                            {
+                                foreach (var difficulty in Model.Difficulties)
+                                {
+                                    <option value="@difficulty"
+                                            selected="@(difficulty == Model.DifficultyLevel)">
+                                        @difficulty
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                        <span asp-validation-for="DifficultyLevel"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- ================================================= -->
+                <!-- QUESTION TEXT                                      -->
+                <!-- ================================================= -->
+
+                <div class="form-group mt-3">
+
+                    <label class="form-label">
+                        Question
+                        <span class="text-danger">*</span>
+                    </label>
+
+                    <div class="question-editor-container">
+
+                        <!-- TOOLBAR -->
+
+                        <div class="question-toolbar">
+
+                            <button type="button"
+                                    class="question-tool-btn"
+                                    data-command="bold"
+                                    title="Bold">
+                                <b>B</b>
+                            </button>
+
+                            <button type="button"
+                                    class="question-tool-btn"
+                                    data-command="italic"
+                                    title="Italic">
+                                <i>I</i>
+                            </button>
+
+                            <button type="button"
+                                    class="question-tool-btn"
+                                    data-command="underline"
+                                    title="Underline">
+                                <u>U</u>
+                            </button>
+
+                            <button type="button"
+                                    class="question-tool-btn"
+                                    id="questionImageBtn"
+                                    title="Insert Image">
+
+                                🖼 Image
+
+                            </button>
+
+                            <input type="file"
+                                   id="questionImageInput"
+                                   accept="image/*"
+                                   style="display:none;" />
+
+                            <button type="button"
+                                    class="question-tool-btn"
+                                    id="questionMathBtn"
+                                    title="Insert Math">
+
+                                ∑ Math
+
+                            </button>
+
+                        </div>
+
+                        <!-- EDITOR -->
+
+                        <div id="questionEditor"
+                             class="question-editor"
+                             contenteditable="true"
+                             spellcheck="true"
+                             data-placeholder="Enter your Question here...">@Html.Raw(Model.QuestionText)</div>
+
+                        </div>
+
+                        <input type="hidden"
+                               asp-for="QuestionText"
+                               id="hiddenQuestionText" />
+
+                        <span asp-validation-for="QuestionText"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <!-- ================================================= -->
+                    <!-- OPTIONS                                            -->
+                    <!-- ================================================= -->
+
+                    <div class="qbms-section-title mt-4">
+                        Options
+                    </div>
+
+                    <!-- OPTION 1 -->
+                    <div class="form-group mt-3">
+
+                        <label class="form-label">
+                            Option 1
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="question-editor-container">
+
+                            <div class="question-toolbar">
+
+                                <button type="button"
+                                        class="question-tool-btn"
+                                        data-command="bold"
+                                        title="Bold">
+                                    <b>B</b>
+                                </button>
+
+                                <button type="button"
+                                        class="question-tool-btn"
+                                        data-command="italic"
+                                        title="Italic">
+                                    <i>I</i>
+                                </button>
+
+                                <button type="button"
+                                        class="question-tool-btn"
+                                        data-command="underline"
+                                        title="Underline">
+                                    <u>U</u>
+                                </button>
+
+                            </div>
+
+                            <div id="option1Editor"
+                                 class="question-editor"
+                                 contenteditable="true"
+                                 spellcheck="true"
+                                 data-placeholder="Enter your Option 1 here...">@Html.Raw(Model.Option1)</div>
+
+                            </div>
+                            <input type="hidden"
+                                   asp-for="Option1"
+                                   id="hiddenOption1Text" />
+
+                            <span asp-validation-for="Option1"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <!-- OPTION 2 -->
+                        <div class="form-group mt-3">
+
+                            <label class="form-label">
+                                Option 2
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="question-editor-container">
+
+                                <div class="question-toolbar">
+
+                                    <button type="button"
+                                            class="question-tool-btn"
+                                            data-command="bold"
+                                            title="Bold">
+                                        <b>B</b>
+                                    </button>
+
+                                    <button type="button"
+                                            class="question-tool-btn"
+                                            data-command="italic"
+                                            title="Italic">
+                                        <i>I</i>
+                                    </button>
+
+                                    <button type="button"
+                                            class="question-tool-btn"
+                                            data-command="underline"
+                                            title="Underline">
+                                        <u>U</u>
+                                    </button>
+
+                                </div>
+
+                                <div id="option2Editor"
+                                     class="question-editor"
+                                     contenteditable="true"
+                                     spellcheck="true"
+                                     data-placeholder="Enter your Option 2 here...">@Html.Raw(Model.Option2)</div>
+
+                                </div>
+                                <input type="hidden"
+                                       asp-for="Option2"
+                                       id="hiddenOption2Text" />
+
+                                <span asp-validation-for="Option2"
+                                      class="text-danger">
+                                </span>
+                            </div>
+
+                            <!-- OPTION 3 -->
+                            <div class="form-group mt-3">
+
+                                <label class="form-label">
+                                    Option 3
+                                    <span class="text-danger">*</span>
+                                </label>
+
+                                <div class="question-editor-container">
+
+                                    <div class="question-toolbar">
+
+                                        <button type="button"
+                                                class="question-tool-btn"
+                                                data-command="bold"
+                                                title="Bold">
+                                            <b>B</b>
+                                        </button>
+
+                                        <button type="button"
+                                                class="question-tool-btn"
+                                                data-command="italic"
+                                                title="Italic">
+                                            <i>I</i>
+                                        </button>
+
+                                        <button type="button"
+                                                class="question-tool-btn"
+                                                data-command="underline"
+                                                title="Underline">
+                                            <u>U</u>
+                                        </button>
+
+                                    </div>
+
+                                    <div id="option3Editor"
+                                         class="question-editor"
+                                         contenteditable="true"
+                                         spellcheck="true"
+                                         data-placeholder="Enter your Option 3 here...">@Html.Raw(Model.Option3)</div>
+
+                                    </div>
+                                    <input type="hidden"
+                                           asp-for="Option3"
+                                           id="hiddenOption3Text" />
+
+                                    <span asp-validation-for="Option3"
+                                          class="text-danger">
+                                    </span>
+                                </div>
+
+                                <!-- OPTION 4 -->
+                                <div class="form-group mt-3">
+
+                                    <label class="form-label">
+                                        Option 4
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <div class="question-editor-container">
+
+                                        <div class="question-toolbar">
+
+                                            <button type="button"
+                                                    class="question-tool-btn"
+                                                    data-command="bold"
+                                                    title="Bold">
+                                                <b>B</b>
+                                            </button>
+
+                                            <button type="button"
+                                                    class="question-tool-btn"
+                                                    data-command="italic"
+                                                    title="Italic">
+                                                <i>I</i>
+                                            </button>
+
+                                            <button type="button"
+                                                    class="question-tool-btn"
+                                                    data-command="underline"
+                                                    title="Underline">
+                                                <u>U</u>
+                                            </button>
+
+                                        </div>
+
+                                        <div id="option4Editor"
+                                             class="question-editor"
+                                             contenteditable="true"
+                                             spellcheck="true"
+                                             data-placeholder="Enter your Option 4 here...">@Html.Raw(Model.Option4)</div>
+
+                                        </div>
+                                        <input type="hidden"
+                                               asp-for="Option4"
+                                               id="hiddenOption4Text" />
+
+                                        <span asp-validation-for="Option4"
+                                              class="text-danger">
+                                        </span>
+                                    </div>
+
+                                    <!-- CORRECT ANSWER -->
+                                    <div class="form-group mt-3">
+
+                                        <label class="form-label">
+    Correct Answer
+    <span class="text-danger">*</span>
+</label>
+@{
+    var correctAnswerSelector =
+        new QBMS.Application.Models.CorrectAnswerSelectorViewModel
+        {
+            SelectedOption =
+                QBMS.Application.Helpers.CorrectAnswerHelper.GetSelectedOption(
+                    Model.CorrectAnswer, Model.Option1, Model.Option2, Model.Option3, Model.Option4),
+            LegacyContent = Model.CorrectAnswer,
+            SyncEditorId = "correctanswerEditor",
+            HiddenFieldId = "hiddenCorrectAnswerText",
+            OptionEditorIds = "option1Editor,option2Editor,option3Editor,option4Editor"
+        };
+}
+<partial name="_CorrectAnswerSelect" model="correctAnswerSelector" />
+
+<input type="hidden"
+                                                   asp-for="CorrectAnswer"
+                                                   id="hiddenCorrectAnswerText" />
+
+                                            <span asp-validation-for="CorrectAnswer"
+                                                  class="text-danger">
+                                            </span>
+                                        </div>
+
+                                        <!-- ================================================= -->
+                                        <!-- ACTIONS                                             -->
+                                        <!-- ================================================= -->
+
+                                        <div class="question-actions mt-4">
+
+                                            <button type="submit"
+                                                    class="btn btn-primary"
+                                                    id="saveQuestionBtn">
+
+                                                Save Correction
+
+                                            </button>
+
+                                            <a asp-controller="Setter"
+                                               asp-action="Dashboard"
+                                               class="btn btn-secondary">
+
+                                                Cancel
+
+                                            </a>
+
+                                        </div>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+<partial name="_MathSupport" />
+<script src="~/js/qbms-image-compress.js"></script>
+<script src="~/js/qbms-correct-answer.js"></script>
+<script src="~/js/question-editor.js" asp-append-version="true"></script>

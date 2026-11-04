@@ -1,0 +1,447 @@
+﻿@model QBMS.Application.Models.CreateQuestionPageViewModel
+
+@{
+    ViewData["Title"] = "Create Question";
+
+    var q = Model.Question;
+    var questionTypeText = q != null && string.Equals(q.QuestionType, "SUBJECTIVE", StringComparison.OrdinalIgnoreCase) ? "Subjective" : "MCQ";
+    var optionValues = new[] { q?.Option1, q?.Option2, q?.Option3, q?.Option4 };
+
+    // quota blocks shown at the top of the form
+    var quotaBlocks = new List<(string Title, QBMS.Application.Models.QuestionQuotaViewModel Quota)>();
+    if (Model.Quota != null) { quotaBlocks.Add(("Assignment quota", Model.Quota)); }
+    if (Model.TopicQuota != null) { quotaBlocks.Add(("Selected topic quota", Model.TopicQuota)); }
+}
+
+<link rel="stylesheet"
+      href="~/css/question-editor.css" />
+
+<div class="container mt-4 mb-5">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header qbms-question-header">
+
+            <div class="d-flex justify-content-between
+                        align-items-center">
+
+                <h4 class="mb-0">
+                    Create Question
+                </h4>
+
+                @if (Model.IsResumedQuestion)
+                {
+                    <span class="badge badge-info">
+                        Resumed from last saved work
+                    </span>
+                }
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (TempData["WarningMessage"] != null)
+            {
+                <div class="alert alert-warning">
+                    @TempData["WarningMessage"]
+                </div>
+            }
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+
+            @* ================= QUESTION QUOTA (top of the form) ================= *@
+            @if (quotaBlocks.Count > 0)
+            {
+                <div class="qbms-quota-box qbms-quota-top">
+
+                    @foreach (var block in quotaBlocks)
+                    {
+                        <div class="quota-block">
+
+                            <div class="quota-block-title">
+                                @block.Title
+                            </div>
+
+                            <div class="quota-block-items">
+
+                                <div class="quota-item">
+                                    <span>Easy</span>
+                                    <strong>@(block.Quota.EasyAssigned - block.Quota.EasyUsed)</strong>
+                                    <small class="d-block text-muted">Used @block.Quota.EasyUsed / @block.Quota.EasyAssigned</small>
+                                </div>
+
+                                <div class="quota-item">
+                                    <span>Medium</span>
+                                    <strong>@(block.Quota.MediumAssigned - block.Quota.MediumUsed)</strong>
+                                    <small class="d-block text-muted">Used @block.Quota.MediumUsed / @block.Quota.MediumAssigned</small>
+                                </div>
+
+                                <div class="quota-item">
+                                    <span>Hard</span>
+                                    <strong>@(block.Quota.HardAssigned - block.Quota.HardUsed)</strong>
+                                    <small class="d-block text-muted">Used @block.Quota.HardUsed / @block.Quota.HardAssigned</small>
+                                </div>
+
+                                <div class="quota-item quota-total">
+                                    <span>Total remaining</span>
+                                    <strong>@block.Quota.TotalRemaining</strong>
+                                    <small class="d-block text-muted">Used @block.Quota.TotalUsed / @block.Quota.TotalAssigned</small>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+
+
+            <form asp-controller="Setter"
+                  asp-action="CreateQuestion"
+                  method="post"
+                  id="questionForm"
+                  data-duplicate-url="@Url.Action("CheckDuplicate", "Setter")"
+                  autocomplete="off">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       id="NavigationAction"
+                       name="NavigationAction"
+                       value="save" />
+
+                <input type="hidden"
+                       asp-for="AssignmentId"
+                       id="AssignmentId" />
+
+                <input type="hidden"
+                       asp-for="Question.AssignmentID"
+                       id="Question_AssignmentId" />
+
+                <input type="hidden"
+                       asp-for="Question.QuestionId"
+                       id="Question_QuestionId" />
+
+                @* hierarchy ids, question type and difficulty are pre-filled (from the TOS quota) and posted as hidden fields *@
+                <input type="hidden" asp-for="Question.MainExamId" id="Question_MainExamId" />
+                <input type="hidden" asp-for="Question.PaperId" id="Question_PaperId" />
+                <input type="hidden" asp-for="Question.SectionId" id="Question_SectionId" />
+                <input type="hidden" asp-for="Question.SubsectionId" id="Question_SubsectionId" />
+                <input type="hidden" asp-for="Question.TopicId" id="Question_TopicId" />
+                <input type="hidden" asp-for="Question.QuestionType" id="Question_QuestionType" />
+                <input type="hidden"
+                       asp-for="Question.DifficultyLevel"
+                       id="difficultySelect" />
+
+
+                <!-- ================================================= -->
+                <!-- QUESTION MAPPING (pre-filled, shown as bold text)   -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title">
+                    Question Mapping
+                </div>
+
+                <div class="qbms-prefilled">
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">Exam</span>
+                        <strong id="examNameDisplay">@q?.ExamName</strong>
+                    </div>
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">Paper</span>
+                        <strong id="paperNameDisplay">@q?.PaperName</strong>
+                    </div>
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">Section</span>
+                        <strong id="sectionNameDisplay">@q?.SectionName</strong>
+                    </div>
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">SubSection</span>
+                        <strong id="subsectionNameDisplay">@q?.SubsectionName</strong>
+                    </div>
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">Topic</span>
+                        <strong id="topicNameDisplay">@q?.TopicName</strong>
+                    </div>
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">Question Type</span>
+                        <strong id="questionTypeDisplay">@questionTypeText</strong>
+                    </div>
+
+                    <div class="prefilled-item">
+                        <span class="prefilled-label">Difficulty</span>
+                        <strong id="difficultyDisplay">@q?.DifficultyLevel</strong>
+                    </div>
+
+                </div>
+
+                <span asp-validation-for="Question.TopicId" class="text-danger"></span>
+                <span asp-validation-for="Question.QuestionType" class="text-danger"></span>
+                <span asp-validation-for="Question.DifficultyLevel" class="text-danger"></span>
+
+
+                <!-- ================================================= -->
+                <!-- QUESTION EDITOR                                    -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title mt-3">
+                    Question
+                </div>
+
+                <label class="form-label">
+                    Question Text
+                    <span class="text-danger">*</span>
+                </label>
+
+                <div class="question-editor-container">
+
+                    <div class="question-toolbar">
+
+                        <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                        <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                        <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                        <button type="button" class="question-tool-btn editor-image-btn">🖼 Image</button>
+                        <input type="file" class="editor-image-input" accept="image/*" style="display:none;" />
+                        <button type="button" class="question-tool-btn editor-math-btn">∑ Math</button>
+
+                    </div>
+
+                    <div id="questionEditor"
+                         class="question-editor"
+                         contenteditable="true"
+                         spellcheck="true"
+                         data-placeholder="Enter your question here...">@Html.Raw(q?.QuestionText)</div>
+
+                </div>
+
+                <input type="hidden"
+                       asp-for="Question.QuestionText"
+                       id="hiddenQuestionText" />
+
+                <span asp-validation-for="Question.QuestionText"
+                      class="text-danger">
+                </span>
+
+                <div class="duplicate-check-bar">
+                    <button type="button" id="checkDuplicateBtn" class="btn btn-outline-secondary btn-sm">Check duplicates</button>
+                    <span class="form-hint">Compared with every saved question. A question at or above the similarity limit cannot be saved.</span>
+                </div>
+                <div id="duplicatePanel" class="duplicate-panel@(Model.DuplicateMatches != null && Model.DuplicateMatches.Count > 0 ? " is-duplicate" : "")">
+                    @if (Model.DuplicateMatches != null && Model.DuplicateMatches.Count > 0)
+                    {
+                        <div class="duplicate-title">Possible duplicate: this question is too similar to an existing question and was not saved.</div>
+                        foreach (var match in Model.DuplicateMatches)
+                        {
+                            <div class="duplicate-match">ID @match.QuestionId | @match.SimilarityPercent.ToString("0.00")% | @match.QuestionText</div>
+                        }
+                    }
+                    else if (Model.DuplicateCheckUnavailable)
+                    {
+                        <div>The duplicate check service could not be reached, so this question was saved without it.</div>
+                    }
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- OPTIONS (two per line, smaller boxes)               -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title mt-3">
+                    Options
+                </div>
+
+                <div class="row">
+
+                    @for (var i = 1; i <= 4; i++)
+                    {
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Option @i
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="question-editor-container">
+
+                                <div class="question-toolbar">
+
+                                    <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                                    <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                                    <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                                    <button type="button" class="question-tool-btn editor-image-btn">🖼 Image</button>
+                                    <input type="file" class="editor-image-input" accept="image/*" style="display:none;" />
+                                    <button type="button" class="question-tool-btn editor-math-btn">∑ Math</button>
+
+                                </div>
+
+                                <div id="option@(i)Editor"
+                                     class="question-editor option-editor"
+                                     contenteditable="true"
+                                     spellcheck="true"
+                                     data-placeholder="Enter Option @i here...">@Html.Raw(optionValues[i - 1])</div>
+
+                            </div>
+
+                            @Html.Hidden("Question.Option" + i, optionValues[i - 1], new { id = "hiddenOption" + i + "Text" })
+
+                            @Html.ValidationMessage("Question.Option" + i, new { @class = "text-danger" })
+
+                        </div>
+                    }
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- CORRECT ANSWER                                      -->
+                <!-- ================================================= -->
+
+                <label class="form-label mt-2">
+                    Correct Answer
+                    <span class="text-danger">*</span>
+                </label>
+                @{
+                    var correctAnswerSelector =
+                        new QBMS.Application.Models.CorrectAnswerSelectorViewModel
+                        {
+                            SelectedOption =
+                                QBMS.Application.Helpers.CorrectAnswerHelper.GetSelectedOption(
+                                    q?.CorrectAnswer, q?.Option1, q?.Option2, q?.Option3, q?.Option4),
+                            LegacyContent = q?.CorrectAnswer,
+                            SyncEditorId = "correctanswerEditor",
+                            HiddenFieldId = "hiddenCorrectAnswerText",
+                            OptionEditorIds = "option1Editor,option2Editor,option3Editor,option4Editor"
+                        };
+                }
+                <partial name="_CorrectAnswerSelect" model="correctAnswerSelector" />
+
+                <input type="hidden"
+                       asp-for="Question.CorrectAnswer"
+                       id="hiddenCorrectAnswerText" />
+
+                <span asp-validation-for="Question.CorrectAnswer"
+                      class="text-danger">
+                </span>
+
+
+                <!-- ================================================= -->
+                <!-- ACTIONS                                             -->
+                <!-- ================================================= -->
+
+                <div class="question-actions mt-4
+                            d-flex
+                            justify-content-between
+                            align-items-center">
+
+                    <div>
+
+                        @if (Model.CanGoPrevious &&
+                           Model.PreviousQuestionId.HasValue)
+                        {
+                            <a asp-controller="Setter"
+                               asp-action="CreateQuestion"
+                               asp-route-assignmentId="@Model.AssignmentId"
+                               asp-route-questionId="@Model.PreviousQuestionId"
+                               class="btn btn-secondary">
+
+                                ← Previous
+
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    disabled>
+
+                                ← Previous
+
+                            </button>
+                        }
+
+                    </div>
+
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-success"
+                                id="saveQuestionBtn">
+
+                            Save
+
+                        </button>
+
+
+                        @if (Model.CanGoNext)
+                        {
+                            <button type="submit"
+                                    class="btn btn-primary"
+                                    id="nextQuestionBtn">
+
+                                Next →
+
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    disabled>
+
+                                Next →
+
+                            </button>
+                        }
+
+
+                        <a asp-controller="Setter"
+                           asp-action="Dashboard"
+                           class="btn btn-outline-secondary">
+
+                            Cancel
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<partial name="_MathSupport" />
+<script src="~/js/qbms-image-compress.js"></script>
+<script src="~/js/qbms-correct-answer.js"></script>
+<script src="~/js/question-editor.js" asp-append-version="true"></script>

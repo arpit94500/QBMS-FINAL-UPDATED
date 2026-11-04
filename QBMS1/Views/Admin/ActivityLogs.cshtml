@@ -1,0 +1,121 @@
+﻿@model QBMS.Application.Models.ActivityLogPage
+@{
+    ViewData["Title"] = "Activity Logs";
+    var q = Model.Query;
+    Func<int, object> route = p => new
+    {
+        personnelNo = q.PersonnelNo,
+        role = q.Role,
+        search = q.Search,
+        from = q.From.HasValue ? q.From.Value.ToString("yyyy-MM-dd") : null,
+        to = q.To.HasValue ? q.To.Value.ToString("yyyy-MM-dd") : null,
+        pageSize = q.PageSize,
+        page = p
+    };
+    int firstShown = Model.Total == 0 ? 0 : (q.Page - 1) * q.PageSize + 1;
+    int lastShown = Math.Min(Model.Total, q.Page * q.PageSize);
+}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1>Activity Logs</h1>
+            <p>Every action done by logged-in users, and every login attempt.</p>
+        </div>
+        <div>
+            <a asp-controller="Admin" asp-action="Dashboard" class="back-button">Dashboard</a>
+        </div>
+    </div>
+
+    <form asp-action="ActivityLogs" method="get" class="glass-card">
+        <div class="filter-bar">
+            <div class="form-group">
+                <label for="personnelNo">Personal number</label>
+                <input id="personnelNo" name="personnelNo" class="qbms-input" value="@q.PersonnelNo" />
+            </div>
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select id="role" name="role" class="qbms-select">
+                    <option value="">All</option>
+                    @foreach (var r in new[] { "ADMIN", "SETTER", "VETTER" })
+                    {
+                        <option value="@r" selected="@(q.Role == r)">@r</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="from">From</label>
+                <input id="from" name="from" type="date" class="qbms-input" value="@(q.From.HasValue ? q.From.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+            <div class="form-group">
+                <label for="to">To</label>
+                <input id="to" name="to" type="date" class="qbms-input" value="@(q.To.HasValue ? q.To.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+            <div class="form-group">
+                <label for="search">Search</label>
+                <input id="search" name="search" class="qbms-input" placeholder="activity, path, name, IP" value="@q.Search" />
+            </div>
+            <div class="form-group">
+                <label for="pageSize">Rows per page</label>
+                <select id="pageSize" name="pageSize" class="qbms-select">
+                    @foreach (var s in new[] { 10, 25, 50, 100 })
+                    {
+                        <option value="@s" selected="@(q.PageSize == s)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a asp-action="ActivityLogs" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="qbms-table-wrap">
+        <table class="qbms-table" id="activityTable" data-no-paginate="true">
+            <thead>
+                <tr>
+                    <th>Time</th><th>Personal no.</th><th>Name</th><th>Role</th><th>Activity</th>
+                    <th>Method</th><th>Path</th><th>IP</th><th>Result</th><th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr data-empty-row="true"><td colspan="10" class="text-center p-4">No activity found.</td></tr>
+                }
+                @foreach (var e in Model.Items)
+                {
+                    <tr>
+                        <td style="white-space:nowrap;">@e.LoggedAt.ToString("dd-MMM-yyyy HH:mm:ss")</td>
+                        <td>@e.PersonnelNo</td>
+                        <td>@e.UserName</td>
+                        <td>@e.Role</td>
+                        <td>@e.Activity</td>
+                        <td>@e.HttpMethod</td>
+                        <td>@e.Path@(string.IsNullOrEmpty(e.QueryString) ? "" : "?" + e.QueryString)</td>
+                        <td>@e.IpAddress</td>
+                        <td>@(e.IsSuccess ? "OK" : "FAILED")</td>
+                        <td>@e.Details</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="qbms-pager">
+        <span class="qbms-pager-info">Showing @firstShown - @lastShown of @Model.Total</span>
+        <span class="qbms-pager-buttons">
+            @if (q.Page > 1)
+            {
+                <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("ActivityLogs", route(1))">&laquo; First</a>
+                <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("ActivityLogs", route(q.Page - 1))">&lsaquo; Previous</a>
+            }
+            <span class="qbms-pager-page">Page @q.Page of @Model.TotalPages</span>
+            @if (q.Page < Model.TotalPages)
+            {
+                <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("ActivityLogs", route(q.Page + 1))">Next &rsaquo;</a>
+                <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("ActivityLogs", route(Model.TotalPages))">Last &raquo;</a>
+            }
+        </span>
+    </div>
+</div>

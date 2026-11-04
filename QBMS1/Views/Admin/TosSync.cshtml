@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "TOS Synchronization";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>TOS Synchronization</h1>
+
+            <p>
+                Synchronize Table of Specification
+                from INOES to e-Prashnalaya.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="Dashboard"
+               class="back-button">
+                Dashboard
+            </a>
+        </div>
+
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="dashboard-card tos-sync-card">
+
+        <div class="dashboard-icon">
+            T
+        </div>
+
+        <div class="sync-content">
+
+            <h2>INOES → e-Prashnalaya</h2>
+
+            <p>
+                The synchronization process retrieves
+                the latest TOS information from the
+                existing INOES database and updates
+                the e-Prashnalaya database.
+            </p>
+
+            <form asp-controller="Admin"
+                  asp-action="SyncTos"
+                  method="post" id="tosSyncForm">
+
+                <button type="submit"
+                        class="sync-button" id="syncTosButton" >
+                    <span id="syncButtonText">Synchronize TOS</span>
+                    <span id="syncLoader" class="sync-spinner" style="display:none;"></span>
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("tosSyncForm");
+        const button = document.getElementById("syncTosButton");
+        const buttonText = document.getElementById("tosButtonText");
+        const loader = document.getElementById("syncLoader");
+        form.addEventListener("submit", function () {
+            if (button.disabled) { return; }
+            loader.style.display = "inline-block";
+            buttonText.textContent = "Synchronization is in progress ..."
+            button.disabled = true;
+        });
+    });
+</script>

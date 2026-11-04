@@ -1,0 +1,77 @@
+﻿@{ 
+    ViewData["Title"] = "Admin Dashboard";
+}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1>e-Prashnalaya</h1>
+            <p>Question Bank Management System</p>
+        </div>
+        <div class="user-info">
+            <span class="role-badge">ADMIN</span>
+        </div>
+    </div>
+    <div class="dashboard-grid">
+        <a asp-controller="Admin" asp-action="TosSync" class="dashboard-card">
+            <div>
+                <h3>TOS Sync</h3>
+                <p>Synchronize TOS Data from INOES</p>
+            </div>
+        </a>
+        <a asp-controller="Admin" asp-action="TosManagement" class="dashboard-card">
+            <div>
+                <h3>TOS Management</h3>
+                <p>View and Manage Examination Specifications.</p>
+            </div>
+        </a>
+        <a asp-controller="Admin"
+           asp-action="TosAssignmentManagement"
+           class="dashboard-card">
+            <i class="fas fa-users-cog"></i>
+            <h3>TOS Assignment Management</h3>
+        </a>
+
+        @*<a asp-controller="Admin" asp-action="AssignSetter" class="dashboard-card">
+            <div>
+                <h3>Assign Setter</h3>
+                <p>Assign question creation work to setters.</p>
+            </div>
+        </a>
+        <a asp-controller="Admin" asp-action="AssignVetter" class="dashboard-card">
+            <div>
+                <h3>Assign Vetter</h3>
+                <p>Assign question for verification.</p>
+            </div>
+        </a>*@
+        <a asp-controller="Admin" asp-action="UserManagement" class="dashboard-card">
+            <div>
+                <h3>User Management</h3>
+                <p>Manage Admin, Setter and Vetter accounts.</p>
+            </div>
+        </a>
+        @*<a asp-controller="Admin" asp-action="QuestionReview" class="dashboard-card">
+            <div>
+                <h3>Question Review</h3>
+                <p>Review questions processed by Vetters.</p>
+            </div>
+        </a>*@
+        <a asp-controller="Admin" asp-action="FinalApproval" class="dashboard-card">
+            <div>
+                <h3>Final Approval</h3>
+                <p>Approve or reject vetted questions.</p>
+            </div>
+        </a>
+        <a asp-controller="Admin" asp-action="ActivityLogs" class="dashboard-card">
+            <div>
+                <h3>Activity Logs</h3>
+                <p>See what each user did and when.</p>
+            </div>
+        </a>
+        <a asp-controller="Admin" asp-action="Reports" class="dashboard-card">
+            <div>
+                <h3>Reports</h3>
+                <p>View question bank and workflow reports.</p>
+            </div>
+        </a>
+    </div>
+</div>

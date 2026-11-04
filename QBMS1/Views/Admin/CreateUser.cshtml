@@ -1,0 +1,245 @@
+﻿@model QBMS.Application.Models.CreateUserViewModel
+
+@{
+    ViewData["Title"] = "Add User";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>Add User</h1>
+
+            <p>
+                Create a Setter or Vetter account.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="UserManagement"
+               class="back-button">
+                Back
+            </a>
+        </div>
+
+    </div>
+
+
+    <div class="assignment-panel">
+
+        <form asp-controller="Admin"
+              asp-action="CreateUser"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="error-message">
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Personnel No
+                </label>
+
+                <input asp-for="PersonnelNo"
+                       class="qbms-input"
+                       maxlength="30"
+                       autocomplete="off"
+                       required />
+
+                <button type="button"
+                        id="fetchNameButton"
+                        class="assign-button">
+                    Fetch Details
+                </button>
+
+                <span asp-validation-for="PersonnelNo"
+                      class="error-message">
+                </span>
+
+                <div id="lookupStatus"
+                     class="form-hint">
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    User Name
+                </label>
+
+                <input asp-for="UserName"
+                       class="qbms-input"
+                       readonly
+                       placeholder="Fetched from HRCDF using the Personnel No" />
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Role
+                </label>
+
+                <select asp-for="RoleId"
+                        class="qbms-select"
+                        required>
+
+                    <option value="0">
+                        Select Role
+                    </option>
+                    @if(Model.Roles != null)
+            {
+                foreach(var role in Model.Roles)
+                {
+                    <option value="@role.Id">@role.Name</option>
+                }
+            }
+                </select>
+                <span asp-validation-for="RoleId" class="error-message"></span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+
+                    <input asp-for="IsActive" />
+
+                    Active
+
+                </label>
+
+            </div>
+
+
+            <div class="form-hint">
+                The default password
+                <strong>@ViewBag.DefaultPassword</strong>
+                is set automatically. The user must change it at first login.
+            </div>
+
+
+            <button type="submit"
+                    id="createUserButton"
+                    class="sync-button"
+                    disabled>
+
+                Create User
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var personnelNo = document.getElementById('PersonnelNo');
+            var userName = document.getElementById('UserName');
+            var fetchButton = document.getElementById('fetchNameButton');
+            var statusBox = document.getElementById('lookupStatus');
+            var createButton = document.getElementById('createUserButton');
+            var lookupUrl = '@Url.Action("GetEmployeeName", "Admin")';
+            var lastLookedUp = '';
+
+            function setStatus(message, isError) {
+                statusBox.textContent = message || '';
+                statusBox.style.color = isError ? '#ff8f8f' : '';
+            }
+
+            function refreshCreateButton() {
+                createButton.disabled = !userName.value;
+            }
+
+            function lookup() {
+                var value = personnelNo.value.trim();
+                lastLookedUp = value;
+                userName.value = '';
+                refreshCreateButton();
+
+                if (!value) {
+                    setStatus('Enter a Personnel No.', true);
+                    return;
+                }
+
+                setStatus('Fetching details from HRCDF...', false);
+                fetchButton.disabled = true;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', lookupUrl + '?personnelNo=' + encodeURIComponent(value));
+                xhr.setRequestHeader('Accept', 'application/json');
+
+                xhr.onload = function () {
+                    fetchButton.disabled = false;
+
+                    // Ignore a stale response if the field changed in the meantime.
+                    if (personnelNo.value.trim() !== lastLookedUp) {
+                        return;
+                    }
+
+                    var response = null;
+                    try { response = JSON.parse(xhr.responseText); } catch (e) { }
+
+                    if (xhr.status === 200 && response && response.success) {
+                        userName.value = response.name;
+                        setStatus('Employee found.', false);
+                    } else {
+                        userName.value = '';
+                        setStatus((response && response.message) ||
+                            'Unable to fetch details. Please try again.', true);
+                    }
+
+                    refreshCreateButton();
+                };
+
+                xhr.onerror = function () {
+                    fetchButton.disabled = false;
+                    setStatus('Unable to fetch details. Please try again.', true);
+                };
+
+                xhr.send();
+            }
+
+            fetchButton.addEventListener('click', lookup);
+
+            personnelNo.addEventListener('blur', function () {
+                var value = personnelNo.value.trim();
+                if (value && value !== lastLookedUp) {
+                    lookup();
+                }
+            });
+
+            personnelNo.addEventListener('input', function () {
+                if (personnelNo.value.trim() !== lastLookedUp) {
+                    userName.value = '';
+                    setStatus('', false);
+                    refreshCreateButton();
+                }
+            });
+
+            personnelNo.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    lookup();
+                }
+            });
+
+            // Page re-rendered after a server-side error: keep the fetched name.
+            lastLookedUp = personnelNo.value.trim();
+            refreshCreateButton();
+        })();
+    </script>
+}

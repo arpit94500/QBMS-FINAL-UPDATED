@@ -1,0 +1,866 @@
+﻿@*@model List<QBMS.Application.Models.AdminQuestionReviewViewModel>
+
+    @{
+        ViewData["Title"] = "Final Approval";
+    }
+
+    <div class="dashboard-container">
+
+        <div class="dashboard-header">
+
+            <div>
+                <h1>Final Approval</h1>
+
+                <p>
+                    Questions approved by Vetters and
+                    waiting for Admin decision.
+                </p>
+            </div>
+
+            <div>
+                <a asp-controller="Admin"
+                   asp-action="Dashboard"
+                   class="back-button">
+                    Dashboard
+                </a>
+            </div>
+
+        </div>
+
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="success-message">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="error-message">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+
+        <div class="table-container">
+
+            <table class="tos-table">
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Exam</th>
+                        <th>Paper</th>
+                        <th>Section</th>
+                        <th>SubSection</th>
+                        <th>Topic</th>
+                        <th>Difficulty</th>
+                        <th>Question</th>
+                        <th>Option 1</th>
+                        <th>Option 2</th>
+                        <th>Option 3</th>
+                        <th>Option 4</th>
+                        <th>Correct Answer</th>
+                        <th>Decision</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @if (Model != null &&
+                        Model.Count > 0)
+                    {
+                        foreach (var question in Model)
+                        {
+                    <tr>
+
+                        <td>
+                            @question.QuestionId
+                        </td>
+
+                        <td>
+                            @question.ExamName
+                        </td>
+
+                        <td>
+                            @question.PaperName
+                        </td>
+
+                        <td>
+                            @question.SectionName
+                        </td>
+
+                        <td>
+                            @question.SubsectionName
+                        </td>
+
+                        <td>
+                            @question.TopicName
+                        </td>
+
+                        <td>
+                            @question.DifficultyLevel
+                        </td>
+
+                        <td style="min-width:350px;">
+                            <span class="qbms-math-content">@Html.Raw(@question.QuestionText)</span>
+                        </td>
+                        <td>
+                            <span class="qbms-math-content">@Html.Raw(@question.Option1)</span>
+                        </td>
+                        <td>
+                            <span class="qbms-math-content">@Html.Raw(@question.Option2)</span>
+                        </td>
+                        <td>
+                            <span class="qbms-math-content">@Html.Raw(@question.Option3)</span>
+                        </td>
+                        <td>
+                            <span class="qbms-math-content">@Html.Raw(@question.Option4)</span>
+                        </td>
+                        <td>
+                            <span class="qbms-math-content">@Html.Raw(@question.CorrectAnswer)</span>
+                        </td>
+
+                        <td>
+
+                            <form asp-controller="Admin"
+                                  asp-action="ReviewQuestion"
+                                  method="post">
+
+                                <input type="hidden"
+                                       name="questionId"
+                                       value="@question.QuestionId" />
+
+                                <textarea name="remarks"
+                                          class="qbms-textarea"
+                                          rows="3"
+                                          placeholder="Remarks">
+                                        </textarea>
+
+                                <div style="margin-top:8px;">
+
+                                    <button type="submit"
+                                            name="decision"
+                                            value="APPROVE"
+                                            class="assign-button">
+
+                                        Approve
+
+                                    </button>
+
+                                    <button type="submit"
+                                            name="decision"
+                                            value="REJECT"
+                                            class="assign-button">
+
+                                        Reject
+
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="9"
+                                class="empty-message">
+
+                                No questions are waiting for
+                                final approval.
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>*@
+
+
+@model List<QBMS.Application.Models.AdminQuestionReviewViewModel>
+
+@{
+    ViewData["Title"] = "Final Approval";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>Final Approval</h1>
+
+            <p>
+                Questions approved by Vetters and
+                waiting for Admin decision.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="Dashboard"
+               class="back-button">
+                Dashboard
+            </a>
+        </div>
+
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <!-- FILTER SECTION -->
+
+    <div class="table-container"
+         style="margin-bottom:20px; padding:20px;">
+
+        <form asp-controller="Admin"
+              asp-action="FinalApproval"
+              method="get"
+              id="filterForm">
+
+            <div style="
+                display:flex;
+                gap:20px;
+                align-items:end;
+                flex-wrap:wrap;">
+
+                <div>
+                    <label>
+                        <strong>Exam</strong>
+                    </label>
+
+                    <select id="examId"
+                            name="examId"
+                            class="form-control"
+                            style="min-width:250px;">
+
+                        <option value="">
+                            -- Select Exam --
+                        </option>
+
+                        @foreach (var exam in ViewBag.Exams)
+                        {
+                            if (ViewBag.SelectedExamId != null &&
+                                ViewBag.SelectedExamId == exam.Id)
+                            {
+                                <option value="@exam.Id"
+                                        selected>
+                                    @exam.Name
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@exam.Id">
+                                    @exam.Name
+                                </option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+
+                <div>
+                    <label>
+                        <strong>Paper</strong>
+                    </label>
+
+                    <select id="paperId"
+                            name="paperId"
+                            class="form-control"
+                            style="min-width:250px;">
+
+                        <option value="">
+                            -- Select Paper --
+                        </option>
+
+                        @foreach (var paper in ViewBag.Papers)
+                        {
+                            if (ViewBag.SelectedPaperId != null &&
+                                ViewBag.SelectedPaperId == paper.Id)
+                            {
+                                <option value="@paper.Id"
+                                        selected>
+                                    @paper.Name
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@paper.Id">
+                                    @paper.Name
+                                </option>
+                            }
+                        }
+
+                    </select>
+                </div>
+
+
+                <div>
+
+                    <button type="submit"
+                            class="assign-button">
+                        Filter
+                    </button>
+
+                    <a asp-controller="Admin"
+                       asp-action="FinalApproval"
+                       class="assign-button"
+                       style="text-decoration:none;">
+                        Clear
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- BULK ACTION FORM -->
+
+    <form id="bulkReviewForm"
+          asp-controller="Admin"
+          asp-action="BulkReviewQuestions"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div id="bulkQuestionIds"></div>
+
+        <div class="table-container"
+             style="margin-bottom:15px; padding:15px;">
+
+            <div style="
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:15px;
+                flex-wrap:wrap;">
+
+                <div>
+
+                    <label style="margin-right:15px;">
+
+                        <input type="checkbox"
+                               id="selectAllQuestions" />
+
+                        <strong>
+                            Select All
+                        </strong>
+
+                    </label>
+
+                    <span>
+                        Selected:
+                        <strong id="selectedCount">0</strong>
+                    </span>
+
+                </div>
+
+
+                <div>
+
+                    <textarea name="remarks"
+                              id="bulkRemarks"
+                              class="qbms-textarea"
+                              rows="2"
+                              placeholder="Remarks for selected questions"
+                              style="min-width:300px;"></textarea>
+
+                    <button type="submit"
+                            name="decision"
+                            value="APPROVE"
+                            class="assign-button"
+                            @*onclick="return confirmBulkAction('APPROVE');"*@>
+
+                        Approve Selected
+
+                    </button>
+
+                    <button type="submit"
+                            name="decision"
+                            value="REJECT"
+                            class="assign-button"
+                            @*onclick="return confirmBulkAction('REJECT');"*@>
+
+                        Reject Selected
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+
+
+    <!-- QUESTION TABLE -->
+
+    <div class="table-container">
+
+        <table class="tos-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        <input type="checkbox"
+                               id="headerSelectAll" />
+                    </th>
+
+                    <th>ID</th>
+                    <th>Exam</th>
+                    <th>Paper</th>
+                    <th>Section</th>
+                    <th>SubSection</th>
+                    <th>Topic</th>
+                    <th>Difficulty</th>
+                    <th>Question</th>
+                    <th>Option 1</th>
+                    <th>Option 2</th>
+                    <th>Option 3</th>
+                    <th>Option 4</th>
+                    <th>Correct Answer</th>
+                    <th>Decision</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @if (Model != null &&
+                  Model.Count > 0)
+                {
+                    foreach (var question in Model)
+                    {
+                        <tr>
+
+                            <td>
+
+                                <input type="checkbox"
+                                       value="@question.QuestionId"
+                                       class="question-checkbox" />
+
+                            </td>
+
+
+                            <td>
+                                @question.QuestionId
+                            </td>
+
+
+                            <td>
+                                @question.ExamName
+                            </td>
+
+
+                            <td>
+                                @question.PaperName
+                            </td>
+
+
+                            <td>
+                                @question.SectionName
+                            </td>
+
+
+                            <td>
+                                @question.SubsectionName
+                            </td>
+
+
+                            <td>
+                                @question.TopicName
+                            </td>
+
+
+                            <td>
+                                @question.DifficultyLevel
+                            </td>
+
+
+                            <td style="min-width:350px;">
+                                <span class="qbms-math-content">@Html.Raw(question.QuestionText)</span>
+                            </td>
+
+
+                            <td>
+                                <span class="qbms-math-content">@Html.Raw(question.Option1)</span>
+                            </td>
+
+
+                            <td>
+                                <span class="qbms-math-content">@Html.Raw(question.Option2)</span>
+                            </td>
+
+
+                            <td>
+                                <span class="qbms-math-content">@Html.Raw(question.Option3)</span>
+                            </td>
+
+
+                            <td>
+                                <span class="qbms-math-content">@Html.Raw(question.Option4)</span>
+                            </td>
+
+
+                            <td>
+                                <span class="qbms-math-content">@Html.Raw(question.CorrectAnswer)</span>
+                            </td>
+
+
+                            <td>
+
+                                <form asp-controller="Admin"
+                                      asp-action="ReviewQuestion"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="questionId"
+                                           value="@question.QuestionId" />
+
+                                    <textarea name="remarks"
+                                              class="qbms-textarea"
+                                              rows="3"
+                                              placeholder="Remarks"></textarea>
+
+                                    <div style="margin-top:8px;">
+                                        <button type="submit"
+                                                name="decision"
+                                                value="APPROVE"
+                                                class="assign-button">
+
+                                            Approve
+
+                                        </button>
+
+                                        <button type="submit"
+                                                name="decision"
+                                                value="REJECT"
+                                                class="assign-button">
+
+                                            Reject
+
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="15"
+                            class="empty-message">
+
+                            No questions are waiting for
+                            final approval for the selected
+                            Exam/Paper.
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+
+</div>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const examDropdown =
+            document.getElementById("examId");
+
+        const paperDropdown =
+            document.getElementById("paperId");
+
+        const selectAll =
+            document.getElementById("selectAllQuestions");
+
+        const headerSelectAll =
+            document.getElementById("headerSelectAll");
+
+        const selectedCount =
+            document.getElementById("selectedCount");
+
+        const checkboxes =
+            document.querySelectorAll(".question-checkbox");
+        const bulkForm = document.getElementById("bulkReviewForm");
+        const hiddenContainer = document.getElementById("bulkQuestionIds");
+
+        function updateSelectedCount() {
+
+            const selected =
+                document.querySelectorAll(
+                    ".question-checkbox:checked"
+                ).length;
+
+            selectedCount.textContent =
+                selected;
+            const allCheckboxes = document.querySelectorAll(".question-checkbox");
+            if (allCheckboxes.length > 0) {
+                selectAll.checked = selected === allCheckboxes.length;
+            }
+            headerSelectAll.checked = selectAll.checked;
+        }
+
+        bulkForm.addEventListener("submit", function (event) {
+            const selected = document.querySelectorAll(".question-checkbox:checked");
+            if (selected.length === 0) {
+                event.preventDefault();
+                alert("Please select at least one question. From view");
+                return;
+            }
+            if (!hiddenContainer) {
+                event.preventDefault();
+                console.error("bulkQID missing");
+                return;
+            }
+            hiddenContainer.innerHTML = "";
+
+            selected.forEach(function (checkbox) {
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "questionIds";
+                input.value = checkbox.value;
+                hiddenContainer.appendChild(input);
+            });
+            console.log("Selected QID", Array.from(selected).map(function (x) { return x.value; }));
+        });
+        updateSelectedCount();
+
+        function setAllCheckboxes(value) {
+
+            checkboxes.forEach(function (checkbox) {
+
+                checkbox.checked =
+                    value;
+
+            });
+
+            selectAll.checked =
+                value;
+
+            headerSelectAll.checked =
+                value;
+
+            updateSelectedCount();
+        }
+
+
+        selectAll.addEventListener(
+            "change",
+            function () {
+                const checkboxes = document.querySelectorAll(".question-checkbox");
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = selectAll.checked;
+                });
+                updateSelectedCount();
+
+            });
+        document.addEventListener("change", function (event) {
+            if (event.target.classList.contains("question-checkbox")) {
+                updateSelectedCount();
+            }
+        });
+
+
+        headerSelectAll.addEventListener(
+            "change",
+            function () {
+
+                setAllCheckboxes(
+                    this.checked
+                );
+
+            });
+
+
+        checkboxes.forEach(
+            function (checkbox) {
+
+                checkbox.addEventListener(
+                    "change",
+                    function () {
+
+                        const total =
+                            checkboxes.length;
+
+                        const selected =
+                            document.querySelectorAll(
+                                ".question-checkbox:checked"
+                            ).length;
+
+                        selectAll.checked =
+                            total > 0 &&
+                            selected === total;
+
+                        headerSelectAll.checked =
+                            selectAll.checked;
+
+                        updateSelectedCount();
+
+                    });
+
+            });
+
+
+        /*
+         * Load papers whenever an exam
+         * is selected.
+         */
+
+        examDropdown.addEventListener(
+            "change",
+            function () {
+
+                const examId =
+                    this.value;
+
+                paperDropdown.innerHTML =
+                    '<option value="">-- Select Paper --</option>';
+
+                if (!examId) {
+                    return;
+                }
+
+                fetch(
+                    '@Url.Action("GetPapers", "Admin")?examId='
+                    + examId
+                )
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+
+                    data.forEach(function (paper) {
+
+                        const option =
+                            document.createElement("option");
+
+                        option.value =
+                            paper.id;
+
+                        option.textContent =
+                            paper.name;
+
+                        paperDropdown.appendChild(
+                            option
+                        );
+
+                    });
+
+                })
+                .catch(function (error) {
+
+                    console.error(
+                        "Unable to load papers:",
+                        error
+                    );
+
+                });
+
+            });
+
+
+        updateSelectedCount();
+
+    });
+
+
+    function confirmBulkAction(decision) {
+
+        const selected =
+            document.querySelectorAll(
+                ".question-checkbox:checked"
+            ).length;
+
+        if (selected === 0) {
+
+            alert(
+                "Please select at least one question."
+            );
+
+            return false;
+        }
+
+
+        if (decision === "APPROVE") {
+
+            return confirm(
+                "Are you sure you want to approve "
+                + selected
+                + " selected question(s)?"
+            );
+
+        }
+
+
+        if (decision === "REJECT") {
+
+            return confirm(
+                "Are you sure you want to reject "
+                + selected
+                + " selected question(s)?"
+            );
+
+        }
+
+
+        return false;
+    }
+
+</script>
+
+<partial name="_MathRender" />

@@ -1,0 +1,176 @@
+﻿@model QBMS.Application.Models.TosAssignmentManagementViewModel
+@{
+    ViewData["Title"] = "TOS Assignment Management";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h1>TOS Assignment Management</h1>
+            <p>View assignments, filter by exam / paper and reassign remaining question work.</p>
+        </div>
+        <div>
+            <a asp-controller="Admin" asp-action="TosManagement" class="back-button">New Assignment</a>
+            <a asp-controller="Admin" asp-action="Dashboard" class="back-button">Dashboard</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    @* ---------- filters ---------- *@
+    <form asp-action="TosAssignmentManagement" method="get" class="glass-card" id="assignmentFilterForm">
+        <h3 class="panel-heading">Filter</h3>
+
+        <div class="filter-bar">
+            <div class="form-group">
+                <label for="examId">Exam</label>
+                <select id="examId"
+                        name="examId"
+                        class="qbms-select"
+                        data-papers-url="@Url.Action("GetPapers", "Admin")"
+                        data-paper-target="#paperId">
+                    <option value="">All exams</option>
+                    @foreach (var exam in Model.Exams)
+                    {
+                        <option value="@exam.Id" selected="@(Model.ExamId == exam.Id)">@exam.Name (ID @exam.Id)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="paperId">Paper</label>
+                <select id="paperId"
+                        name="paperId"
+                        class="qbms-select"
+                        disabled="@(!Model.ExamId.HasValue)">
+                    <option value="">All papers</option>
+                    @foreach (var paper in Model.Papers)
+                    {
+                        <option value="@paper.Id" selected="@(Model.PaperId == paper.Id)">@paper.Name (ID @paper.Id)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="search">Search</label>
+                <input id="search"
+                       name="search"
+                       value="@Model.Search"
+                       class="qbms-input"
+                       placeholder="Assignment ID, section, topic, Setter or Vetter" />
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a asp-action="TosAssignmentManagement" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    @* ---------- results ---------- *@
+    <div class="glass-card">
+        <div class="filter-bar" style="margin-bottom:12px;">
+            <div class="form-group">
+                <label for="assignmentQuickFilter">Quick filter on the rows below
+                    (<span id="assignmentCount">@Model.Assignments.Count</span> shown)</label>
+                <input id="assignmentQuickFilter"
+                       class="qbms-input"
+                       type="search"
+                       placeholder="Type to narrow the list..."
+                       data-table-filter="#assignmentTable"
+                       data-filter-count="#assignmentCount" />
+            </div>
+            <div class="filter-actions">
+                <button type="button" class="btn btn-outline-secondary" data-export-table="#assignmentTable" data-export-name="tos-assignments">Export CSV</button>
+            </div>
+        </div>
+
+        <div class="qbms-table-wrap">
+            <table class="qbms-table" id="assignmentTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Level</th>
+                        <th>Exam</th>
+                        <th>Paper</th>
+                        <th>Section</th>
+                        <th>SubSection</th>
+                        <th>Topic</th>
+                        <th>Setter</th>
+                        <th>Vetter</th>
+                        <th class="num">Target</th>
+                        <th class="num">Completed</th>
+                        <th class="num">Remaining</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Assignments != null && Model.Assignments.Count > 0)
+                    {
+                        foreach (var item in Model.Assignments)
+                        {
+                            var percent = item.TotalQuestions <= 0 ? 0 : (int)System.Math.Min(100, item.CompletedQuestions * 100L / item.TotalQuestions);
+                            <tr>
+                                <td>@item.AssignmentId</td>
+                                <td>@item.AssignmentLevel</td>
+                                <td>@item.ExamName <small class="text-muted">(ID @item.MainExamId)</small></td>
+                                <td>@item.PaperName @if (item.PaperId.HasValue) { <small class="text-muted">(ID @item.PaperId)</small> }</td>
+                                <td>@item.SectionName</td>
+                                <td>@item.SubsectionName</td>
+                                <td>@item.TopicName</td>
+                                <td>@item.SetterName</td>
+                                <td>@item.VetterName</td>
+                                <td class="num">@item.TotalQuestions</td>
+                                <td class="num">@item.CompletedQuestions</td>
+                                <td class="num">@item.RemainingQuestions</td>
+                                <td data-export="@percent%">
+                                    <div class="progress-track" title="@percent%"><div class="progress-fill" style="width:@(percent)%"></div></div>
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge badge-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <a asp-action="EditTosAssignment"
+                                           asp-route-id="@item.AssignmentId"
+                                           class="btn btn-sm btn-primary">Edit / Reassign</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Inactive</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr data-empty-row="true">
+                            <td colspan="15" class="text-center p-4">No TOS assignments found for the selected filters.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <p class="form-hint" style="margin-top:12px;">
+            Target = questions the TOS requires for the assignment (multiplication factor applied, rounded up per difficulty).
+            Completed = questions the Setter has created, never more than the target of each difficulty.
+            Remaining = Target - Completed.
+        </p>
+    </div>
+</div>

@@ -1,0 +1,472 @@
+﻿/* =========================================================
+   QBMS QUESTION EDITOR
+   ========================================================= */
+body{
+    color:black;
+}
+.question-editor-container {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+/* =========================================================
+   TOOLBAR
+   ========================================================= */
+
+.question-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid #ced4da;
+    background: #f8f9fa;
+}
+
+.question-tool-btn {
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+    .question-tool-btn:hover {
+        background: #e9ecef;
+    }
+
+    .question-tool-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+    }
+
+/* =========================================================
+   QUESTION EDITOR
+   ========================================================= */
+
+.question-editor {
+    min-height: 300px;
+    padding: 16px;
+    outline: none;
+    font-size: 16px;
+    line-height: 1.7;
+    background: #ffffff;
+    color: #212529;
+    overflow-y: auto;
+}
+
+    .question-editor:empty:before {
+        content: attr(data-placeholder);
+        color: #999999;
+    }
+
+    .question-editor:focus {
+        background: #ffffff;
+    }
+
+/* =========================================================
+   READONLY QBMS FIELDS
+   ========================================================= */
+
+.qbms-readonly {
+    background-color: #f5f7fa !important;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   SECTION TITLE
+   ========================================================= */
+
+.qbms-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.qbms-question-header {
+    background: #f8f9fa;
+}
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.resizable-img-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+    vertical-align: middle;
+}
+
+    .resizable-img-wrapper img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+.resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    right: -6px;
+    bottom: -6px;
+    background: #007bff;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    cursor: se-resize;
+    z-index: 10;
+}
+
+/* =========================================================
+   MATH
+   ========================================================= */
+
+.offline-math-node {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0 4px;
+    border-radius: 4px;
+    background: #fff4e6;
+    border: 1px solid #ffd8a8;
+    color: #d9480f;
+    font-family: "Cambria Math", serif;
+    font-style: italic;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   MATH MODAL
+   ========================================================= */
+
+.question-modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.50);
+    justify-content: center;
+    align-items: center;
+}
+
+.question-modal-content {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.20);
+}
+
+    .question-modal-content h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+
+#questionMathInput {
+    width: 100%;
+    min-height: 120px;
+    margin: 10px 0;
+    padding: 10px;
+    resize: vertical;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.preview-label {
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+#questionMathLivePreview {
+    min-height: 50px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    padding: 12px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 18px;
+    overflow-x: auto;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background: #e0e0e0;
+}
+
+    .cancel-btn:hover {
+        background: #d0d0d0;
+    }
+
+.confirm-btn {
+    background: #007bff;
+    color: #ffffff;
+}
+
+    .confirm-btn:hover {
+        background: #0069d9;
+    }
+
+/* =========================================================
+   QUOTA
+   ========================================================= */
+
+.qbms-quota-box {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.quota-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #dee2e6;
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 10px 12px;
+}
+
+    .quota-item strong {
+        font-size: 18px;
+    }
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.question-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* =========================================================
+   EDITOR CONTENT
+   ========================================================= */
+
+.question-editor p {
+    margin-bottom: 8px;
+}
+
+.question-editor ul,
+.question-editor ol {
+    margin-left: 20px;
+}
+
+.question-editor sup,
+.question-editor sub {
+    line-height: 0;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .question-toolbar {
+        gap: 4px;
+    }
+
+    .question-tool-btn {
+        padding: 5px 9px;
+        font-size: 13px;
+    }
+
+    .question-editor {
+        min-height: 240px;
+    }
+
+    .question-actions {
+        flex-direction: column;
+    }
+
+        .question-actions .btn {
+            width: 100%;
+        }
+}
+
+/*updated*/
+.offline-math-node {
+    display: inline-block;
+    margin: 2px 4px;
+    padding: 2px 4px;
+    vertical-align: middle;
+}
+
+.offline-math-preview {
+    font-size: 1.05rem;
+    white-space: nowrap;
+}
+
+.offline-fraction {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 3px;
+}
+
+.offline-frac-top {
+    padding: 0 4px;
+}
+
+.offline-frac-line {
+    width: 100%;
+    border-top: 1px solid #222;
+}
+
+.offline-frac-bottom {
+    padding: 0 4px;
+}
+
+.offline-sqrt {
+    display: inline-block;
+}
+
+.resizable-img-wrapper {
+    display: inline-block;
+    position: relative;
+    margin: 3px;
+}
+
+    .resizable-img-wrapper img {
+        display: block;
+        max-width: 100%;
+    }
+
+.resize-handle {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 10px;
+    height: 10px;
+    cursor: nwse-resize;
+    border: 1px solid #555;
+    background: #fff;
+}
+.latex-math-inline{
+    display:inline-block;
+    vertical-align:middle;
+    padding:2px 4px;
+    cursor:pointer;
+}
+.latex-math-display{
+    display:block;
+    text-align:center;
+    margin:8px 0;
+    cursor: pointer;
+}
+
+/* =========================================================
+   CREATE QUESTION: quota on top, pre-filled values as bold text, compact options
+   ========================================================= */
+
+.qbms-quota-top {
+    margin-bottom: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 28px;
+}
+
+.quota-block {
+    flex: 1 1 380px;
+}
+
+.quota-block-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #343a40;
+}
+
+.quota-block-items {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.qbms-quota-top .quota-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 10px;
+}
+
+    .qbms-quota-top .quota-item.quota-total {
+        background: #e7f1ff;
+        border-color: #b6d4fe;
+    }
+
+/* pre-filled data: no input boxes, just a label and a bold value */
+.qbms-prefilled {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px 24px;
+    margin-bottom: 8px;
+}
+
+.prefilled-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.prefilled-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.prefilled-item strong {
+    font-weight: 700;
+    color: #212529;
+    overflow-wrap: anywhere;
+}
+
+/* smaller option boxes (two per line) */
+.question-editor.option-editor {
+    min-height: 90px;
+    max-height: 220px;
+    padding: 10px 12px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.question-editor-container .question-toolbar {
+    padding: 5px 6px;
+    gap: 4px;
+}
+
+    .question-editor-container .question-toolbar .question-tool-btn {
+        padding: 3px 9px;
+        font-size: 13px;
+    }
+
+@media (max-width: 768px) {
+    .quota-block-items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

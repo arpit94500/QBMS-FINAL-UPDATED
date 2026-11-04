@@ -1,0 +1,414 @@
+﻿@model QBMS.Application.Models.VetterQuestionReviewViewModel
+
+@{
+    ViewData["Title"] = "Review Question";
+}
+<style>
+    *{
+        color:black;
+    }
+</style>
+<link rel="stylesheet"
+      href="~/css/question-editor.css" />
+<div class="container mt-4 mb-5">
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (Model.IsResumedQuestion)
+    {
+        <div class="alert alert-info">
+            Resumed from your last position.
+        </div>
+    }
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h4 class="mb-0">
+                Vetter Question Review
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            <form asp-controller="Vetter" asp-action="SaveQuestionReview" method="post" id="vetterReviewForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="QuestionId" />
+                <input type="hidden" asp-for="AssignmentId" />
+
+                <!-- ================================================= -->
+                <!-- QUESTION MAPPING                                  -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title">
+                    Question Mapping
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Exam
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.ExamName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Paper
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.PaperName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Section
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.SectionName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            SubSection
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.SubsectionName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">
+                            Topic
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.TopicName"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">
+                            Topic ID
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.TopicId"
+                               readonly />
+                    </div>
+
+                </div>
+
+                <!-- ================================================= -->
+                <!-- QUESTION DETAILS                                  -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title mt-3">
+                    Question Details
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Question Type
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.QuestionType"
+                               readonly />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            Difficulty
+                        </label>
+
+                        <input type="text"
+                               class="form-control"
+                               value="@Model.DifficultyLevel"
+                               readonly />
+                    </div>
+
+                </div>
+
+                <!-- ================================================= -->
+                <!-- QUESTION                                          -->
+                <!-- ================================================= -->
+
+                <div class="qbms-section-title mt-3">
+                    Question
+                </div>
+                <div class="question-editor-container">
+                    <div class="question-toolbar">
+                        <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                        <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                        <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                        <button type="button" class="question-tool-btn vetter-image-btn">🖼 Image</button>
+                        <input type="file" class="vetter-image-input" accept="image/*" style="display:none;" />
+                        <button type="button" class="question-tool-btn vetter-math-btn"> ∑ Math</button>
+                    </div>
+                    <div id="vetterQuestionEditor" class="question-editor" contenteditable="true" spellcheck="true">
+                        @Html.Raw(Model.QuestionText)
+                    </div>
+                </div>
+                <input type="hidden" asp-for="QuestionText" id="hiddenVetterQuestionText" />
+                
+                <!-- ================================================= -->
+                <!-- OPTIONS                                           -->
+                <!-- ================================================= -->
+
+                @if (Model.QuestionType != null && new[] { "MCQ","OBJ","OBJECTIVE"}.Contains(Model.QuestionType.Trim().ToUpper()))
+                {
+                    <div class="qbms-section-title mt-3">
+                        Options
+                    </div>
+
+
+                    <!--Option 1-->
+                    <div class="mb-4">
+                        <label class="form-label">Option 1</label>
+                        <div class="question-editor-container">
+                            <div class="question-toolbar">
+                                <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                                <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                                <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                                <button type="button" class="question-tool-btn vetter-image-btn">🖼 Image</button>
+                                <input type="file" class="vetter-image-input" accept="image/*" style="display:none;" />
+                                <button type="button" class="question-tool-btn vetter-math-btn"> ∑ Math</button>
+                            </div>
+                            <div id="vetterOption1Editor" class="question-editor" contenteditable="true" spellcheck="true">
+                                @Html.Raw(Model.Option1)
+                            </div>
+
+                        </div>
+                        <input type="hidden" asp-for="Option1" id="hiddenVetterOption1" />
+                    </div>
+
+                    <!--Option 2-->
+                    <div class="mb-4">
+                        <label class="form-label">Option 2</label>
+                        <div class="question-editor-container">
+                            <div class="question-toolbar">
+                                <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                                <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                                <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                                <button type="button" class="question-tool-btn vetter-image-btn">🖼 Image</button>
+                                <input type="file" class="vetter-image-input" accept="image/*" style="display:none;" />
+                                <button type="button" class="question-tool-btn vetter-math-btn"> ∑ Math</button>
+                            </div>
+                            <div id="vetterOption2Editor" class="question-editor" contenteditable="true" spellcheck="true">
+                                @Html.Raw(Model.Option2)
+                            </div>
+
+                        </div>
+                        <input type="hidden" asp-for="Option2" id="hiddenVetterOption2" />
+                    </div>
+
+                    <!--Option 3-->
+                    <div class="mb-4">
+                        <label class="form-label">Option 3</label>
+                        <div class="question-editor-container">
+                            <div class="question-toolbar">
+                                <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                                <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                                <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                                <button type="button" class="question-tool-btn vetter-image-btn">🖼 Image</button>
+                                <input type="file" class="vetter-image-input" accept="image/*" style="display:none;" />
+                                <button type="button" class="question-tool-btn vetter-math-btn"> ∑ Math</button>
+                            </div>
+                            <div id="vetterOption3Editor" class="question-editor" contenteditable="true" spellcheck="true">
+                                @Html.Raw(Model.Option3)
+                            </div>
+
+                        </div>
+                        <input type="hidden" asp-for="Option3" id="hiddenVetterOption3" />
+                    </div>
+
+                    <!--Option 4-->
+                    <div class="mb-4">
+                        <label class="form-label">Option 4</label>
+                        <div class="question-editor-container">
+                            <div class="question-toolbar">
+                                <button type="button" class="question-tool-btn" data-command="bold"><b>B</b></button>
+                                <button type="button" class="question-tool-btn" data-command="italic"><i>I</i></button>
+                                <button type="button" class="question-tool-btn" data-command="underline"><u>U</u></button>
+                                <button type="button" class="question-tool-btn vetter-image-btn">🖼 Image</button>
+                                <input type="file" class="vetter-image-input" accept="image/*" style="display:none;" />
+                                <button type="button" class="question-tool-btn vetter-math-btn"> ∑ Math</button>
+                            </div>
+                            <div id="vetterOption4Editor" class="question-editor" contenteditable="true" spellcheck="true">
+                                @Html.Raw(Model.Option4)
+                            </div>
+
+                        </div>
+                        <input type="hidden" asp-for="Option4" id="hiddenVetterOption4" />
+                    </div>
+                    <!--Correct Answer-->
+                    <div class="mb-4">
+                        <label class="form-label">Correct Answer</label>
+@{
+    var correctAnswerSelector =
+        new QBMS.Application.Models.CorrectAnswerSelectorViewModel
+        {
+            SelectedOption =
+                QBMS.Application.Helpers.CorrectAnswerHelper.GetSelectedOption(
+                    Model.CorrectAnswer, Model.Option1, Model.Option2, Model.Option3, Model.Option4),
+            LegacyContent = Model.CorrectAnswer,
+            SyncEditorId = "vetterCorrectAnswerEditor",
+            HiddenFieldId = "hiddenVetterCorrectAnswer",
+            OptionEditorIds = "vetterOption1Editor,vetterOption2Editor,vetterOption3Editor,vetterOption4Editor"
+        };
+}
+<partial name="_CorrectAnswerSelect" model="correctAnswerSelector" />
+
+<input type="hidden" asp-for="CorrectAnswer" id="hiddenVetterCorrectAnswer" />
+                    </div>
+                }
+                
+
+            <!-- ================================================= -->
+            <!-- PREVIOUS REMARKS                                  -->
+            <!-- ================================================= -->
+
+            @if (!string.IsNullOrWhiteSpace(
+        Model.LatestRemarks))
+            {
+                <div class="alert alert-warning">
+
+                    <strong>
+                        Latest Remarks:
+                    </strong>
+
+                    <div class="mt-2">
+                        @Model.LatestRemarks
+                    </div>
+
+                </div>
+            }
+
+            <!-- ================================================= -->
+            <!-- VETTER REMARKS                                    -->
+            <!-- ================================================= -->
+
+            
+                <div class="mb-4">
+
+                    <label class="form-label">
+                        Vetter Remarks
+                    </label>
+
+                    <textarea name="Remarks"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Enter review remarks..."
+                              required></textarea>
+
+                </div>
+                
+                <!--====== Navigation Button====-->
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+
+                        @if (Model.CanGoPrevious)
+                        {
+                            <a asp-controller="Vetter"
+                               asp-action="ReviewQuestion"
+                               asp-route-id="@Model.PreviousQuestionId"
+                               class="btn btn-secondary">
+                                Previous
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    disabled>
+                                Previous
+                            </button>
+                        }
+
+                        @if (Model.CanGoNext)
+                        {
+                            <a asp-controller="Vetter"
+                               asp-action="ReviewQuestion"
+                               asp-route-id="@Model.NextQuestionId"
+                               class="btn btn-primary">
+                                Next
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    disabled>
+                                Next
+                            </button>
+                        }
+
+                    </div>
+
+                    <div>
+
+                        <button type="submit" name="action" value="SAVE"
+                                class="btn btn-warning">
+                            @*formaction="@Url.Action(
+            "ApproveQuestion",
+            "Vetter")">*@
+                            Save Changes
+                        </button>
+
+                        <button type="submit" name="action" value="APPROVE"
+                                class="btn btn-success">
+                            APPROVE
+                        </button>
+                        <button type="submit" name="action" value="REJECT"
+                                class="btn btn-success">
+                            REJECT
+                        </button>
+
+                        
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+<partial name="_MathSupport" />
+<script src="~/js/qbms-image-compress.js"></script>
+<script src="~/js/qbms-correct-answer.js"></script>
+<script src="~/js/vetter-question-editor.js" asp-append-version="true"></script>

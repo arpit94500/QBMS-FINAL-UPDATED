@@ -1,0 +1,180 @@
+﻿@model QBMS.Application.Models.ReportsViewModel
+@{
+    ViewData["Title"] = "Reports";
+
+    Func<QBMS.Application.Models.ProgressSummary, string> Segments = s =>
+    {
+        // widths are relative to the larger of target and created so the bar never overflows
+        double total = Math.Max(1, Math.Max(s.Target, s.Created));
+        Func<int, string> w = n => (n * 100.0 / total).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        return "<span class=\"seg-completed\" style=\"width:" + w(s.Completed) + "%\" title=\"Completed " + s.Completed + "\"></span>"
+             + "<span class=\"seg-approved\" style=\"width:" + w(s.VetterApproved) + "%\" title=\"Vetter approved " + s.VetterApproved + "\"></span>"
+             + "<span class=\"seg-submitted\" style=\"width:" + w(s.Submitted) + "%\" title=\"With Vetter " + s.Submitted + "\"></span>"
+             + "<span class=\"seg-rejected\" style=\"width:" + w(s.Rejected) + "%\" title=\"Rejected " + s.Rejected + "\"></span>"
+             + "<span class=\"seg-draft\" style=\"width:" + w(s.Draft) + "%\" title=\"Draft " + s.Draft + "\"></span>";
+    };
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h1>Reports</h1>
+            <p>Question-bank progress by user and by paper.</p>
+        </div>
+        <div>
+            <a asp-controller="Admin" asp-action="Dashboard" class="back-button">Dashboard</a>
+        </div>
+    </div>
+
+    <form asp-action="Reports" method="get" class="glass-card">
+        <div class="filter-bar">
+            <div class="form-group">
+                <label for="examId">Exam</label>
+                <select id="examId" name="examId" class="qbms-select" data-autosubmit="true">
+                    <option value="">All exams</option>
+                    @foreach (var exam in Model.Exams)
+                    {
+                        <option value="@exam.Id" selected="@(Model.ExamId == exam.Id)">@exam.Name (ID @exam.Id)</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <a asp-action="Reports" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Assignments</div><div class="kpi-value">@Model.Total.Assignments</div></div>
+        <div class="kpi"><div class="kpi-label">Target questions</div><div class="kpi-value">@Model.Total.Target</div><div class="kpi-note">from the TOS</div></div>
+        <div class="kpi"><div class="kpi-label">Created</div><div class="kpi-value">@Model.Total.Created</div><div class="kpi-note">@Model.Total.CreatedPercent% of target</div></div>
+        <div class="kpi"><div class="kpi-label">Remaining</div><div class="kpi-value">@Model.Total.Remaining</div></div>
+        <div class="kpi"><div class="kpi-label">With Vetter</div><div class="kpi-value">@Model.Total.Submitted</div></div>
+        <div class="kpi"><div class="kpi-label">Final approved</div><div class="kpi-value">@Model.Total.Completed</div><div class="kpi-note">@Model.Total.CompletedPercent% of target</div></div>
+    </div>
+
+    <div class="report-tabs">
+        <button type="button" class="report-tab is-active" data-report-tab="paneSetters">Setter progress</button>
+        <button type="button" class="report-tab" data-report-tab="paneVetters">Vetter progress</button>
+        <button type="button" class="report-tab" data-report-tab="panePapers">Paper-wise progress</button>
+    </div>
+
+    <div class="legend">
+        <span><i class="seg-completed"></i>Final approved</span>
+        <span><i class="seg-approved"></i>Vetter approved (awaiting Admin)</span>
+        <span><i class="seg-submitted"></i>With Vetter</span>
+        <span><i class="seg-rejected"></i>Rejected (back with Setter)</span>
+        <span><i class="seg-draft"></i>Draft</span>
+        <span><i class="seg-remaining"></i>Not yet created</span>
+    </div>
+
+    @* ---------- Setters ---------- *@
+    <div class="glass-card report-pane" id="paneSetters">
+        <div class="filter-bar" style="margin-bottom:12px;">
+            <div class="form-group">
+                <label for="setterFilter">Find a Setter</label>
+                <input id="setterFilter" class="qbms-input" type="search" placeholder="Name" data-table-filter="#setterTable" />
+            </div>
+            <div class="filter-actions"><button type="button" class="btn btn-outline-secondary" data-export-table="#setterTable" data-export-name="setter-progress">Export CSV</button></div>
+        </div>
+        <div class="qbms-table-wrap">
+            <table class="qbms-table" id="setterTable">
+                <thead>
+                    <tr>
+                        <th>Setter</th><th class="num">Assignments</th><th class="num">Target</th><th class="num">Created</th>
+                        <th class="num">Remaining</th><th class="num">Draft</th><th class="num">With Vetter</th>
+                        <th class="num">Vetter approved</th><th class="num">Rejected</th><th class="num">Final approved</th>
+                        <th>Progress</th><th class="num">% created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Setters.Count == 0) { <tr data-empty-row="true"><td colspan="12" class="text-center p-4">No data.</td></tr> }
+                    @foreach (var r in Model.Setters)
+                    {
+                        <tr>
+                            <td>@r.Name</td><td class="num">@r.Assignments</td><td class="num">@r.Target</td><td class="num">@r.Created</td>
+                            <td class="num">@r.Remaining</td><td class="num">@r.Draft</td><td class="num">@r.Submitted</td>
+                            <td class="num">@r.VetterApproved</td><td class="num">@r.Rejected</td><td class="num">@r.Completed</td>
+                            <td data-export="@r.CreatedPercent%"><div class="stack-bar">@Html.Raw(Segments(r))</div></td>
+                            <td class="num">@r.CreatedPercent%</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* ---------- Vetters ---------- *@
+    <div class="glass-card report-pane" id="paneVetters" hidden>
+        <div class="filter-bar" style="margin-bottom:12px;">
+            <div class="form-group">
+                <label for="vetterFilter">Find a Vetter</label>
+                <input id="vetterFilter" class="qbms-input" type="search" placeholder="Name" data-table-filter="#vetterTable" />
+            </div>
+            <div class="filter-actions"><button type="button" class="btn btn-outline-secondary" data-export-table="#vetterTable" data-export-name="vetter-progress">Export CSV</button></div>
+        </div>
+        <div class="qbms-table-wrap">
+            <table class="qbms-table" id="vetterTable">
+                <thead>
+                    <tr>
+                        <th>Vetter</th><th class="num">Assignments</th><th class="num">Target</th><th class="num">Pending review</th>
+                        <th class="num">Reviewed</th><th class="num">Approved</th><th class="num">Rejected</th>
+                        <th class="num">Final approved</th><th>Progress</th><th class="num">% reviewed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Vetters.Count == 0) { <tr data-empty-row="true"><td colspan="10" class="text-center p-4">No data.</td></tr> }
+                    @foreach (var r in Model.Vetters)
+                    {
+                        var reviewedPct = r.Target <= 0 ? 0 : (int)Math.Min(100, r.Reviewed * 100L / r.Target);
+                        <tr>
+                            <td>@r.Name</td><td class="num">@r.Assignments</td><td class="num">@r.Target</td><td class="num">@r.PendingReview</td>
+                            <td class="num">@r.Reviewed</td><td class="num">@(r.VetterApproved + r.Completed)</td><td class="num">@r.Rejected</td>
+                            <td class="num">@r.Completed</td>
+                            <td data-export="@reviewedPct%"><div class="progress-track"><div class="progress-fill" style="width:@(reviewedPct)%"></div></div></td>
+                            <td class="num">@reviewedPct%</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* ---------- Exams ---------- *@
+    <div class="glass-card report-pane" id="panePapers" hidden>
+        <div class="filter-bar" style="margin-bottom:12px;">
+            <div class="form-group">
+                <label for="paperFilter">Find a paper</label>
+                <input id="paperFilter" class="qbms-input" type="search" placeholder="Exam or paper name" data-table-filter="#paperTable" />
+            </div>
+            <div class="filter-actions"><button type="button" class="btn btn-outline-secondary" data-export-table="#paperTable" data-export-name="paper-progress">Export CSV</button></div>
+        </div>
+        <div class="qbms-table-wrap">
+            <table class="qbms-table" id="paperTable">
+                <thead>
+                    <tr>
+                        <th>Exam - Paper</th><th class="num">Assignments</th><th class="num">Target</th><th class="num">Created</th>
+                        <th class="num">Remaining</th><th class="num">Draft</th><th class="num">With Vetter</th>
+                        <th class="num">Vetter approved</th><th class="num">Rejected</th><th class="num">Final approved</th>
+                        <th>Progress</th><th class="num">% created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.PaperWise.Count == 0) { <tr data-empty-row="true"><td colspan="12" class="text-center p-4">No data.</td></tr> }
+                    @foreach (var r in Model.PaperWise)
+                    {
+                        <tr>
+                            <td>@r.Name <small class="text-muted">(Paper ID @r.Key)</small></td><td class="num">@r.Assignments</td><td class="num">@r.Target</td><td class="num">@r.Created</td>
+                            <td class="num">@r.Remaining</td><td class="num">@r.Draft</td><td class="num">@r.Submitted</td>
+                            <td class="num">@r.VetterApproved</td><td class="num">@r.Rejected</td><td class="num">@r.Completed</td>
+                            <td data-export="@r.CreatedPercent%"><div class="stack-bar">@Html.Raw(Segments(r))</div></td>
+                            <td class="num">@r.CreatedPercent%</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

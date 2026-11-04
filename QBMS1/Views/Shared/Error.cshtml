@@ -1,0 +1,99 @@
+﻿@model QBMS1.Models.ErrorViewModel
+
+@{
+    ViewData["Title"] = "Something Went Wrong";
+}
+
+<style>
+    .error-page {
+        min-height: 75vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 25px;
+    }
+
+    .error-card {
+        max-width: 620px;
+        width: 100%;
+        text-align: center;
+        padding: 40px 25px;
+        border-radius: 20px;
+        border: 1px solid rgba(100, 140, 180, .3);
+        background: rgba(255, 255, 255, .8);
+        box-shadow: 0 12px 40px rgba(20, 50, 80, .12);
+    }
+
+    .error-icon {
+        font-size: 65px;
+        margin-bottom: 15px;
+    }
+
+    .error-card h1 {
+        color: #1769aa;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .error-card p {
+        color: #52677a;
+        line-height: 1.7;
+    }
+
+    .request-id {
+        margin: 20px 0;
+        padding: 12px;
+        background: rgba(100, 140, 180, .1);
+        border-radius: 8px;
+        overflow-wrap: anywhere;
+    }
+
+    .error-home {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 11px 24px;
+        background: #1769aa;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    @@media (prefers-color-scheme: dark) {
+        .error-card {
+            background: rgba(28, 43, 58, .9);
+        }
+
+            .error-card p {
+                color: #c1d0df;
+            }
+    }
+</style>
+
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-icon">⚠️</div>
+
+        <h1>Something Went Wrong</h1>
+
+        <p>
+            An unexpected error occurred while processing your request.
+            Please try again. If the problem continues, contact your
+            system administrator.
+        </p>
+
+        @if (Model != null && Model.ShowRequestId)
+        {
+            <div class="request-id">
+                <strong>Reference ID:</strong>
+                <code>@Model.RequestId</code>
+            </div>
+        }
+
+        <a asp-controller="Account"
+           asp-action="Login"
+           class="error-home">
+            Return to Login
+        </a>
+    </div>
+</div>

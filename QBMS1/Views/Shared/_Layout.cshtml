@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - e-Prashnalaya</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/qbms.css" />
+    <link rel="stylesheet" href="~/css/qbms-ui.css" asp-append-version="true" />
+</head>
+<body>
+    <div>
+
+        @if (User.Identity != null &&
+           User.Identity.IsAuthenticated)
+        {
+            <div class="dashboard-header">
+
+                <span style="margin-right:15px;">
+                    @User.Identity.Name
+                </span>
+
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post"
+                      style="display:inline;">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="back-button">
+
+                        Logout
+
+                    </button>
+
+                </form>
+
+            </div>
+        }
+
+    </div>
+
+    @RenderBody()
+    <script src="~/js/qbms-ui.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,273 @@
+﻿@model QBMS.Application.Models.QuestionUploadViewModel
+
+@{
+    ViewData["Title"] = "Upload Questions";
+}
+
+@{
+    var assignmentList = ViewBag.Assignments as IEnumerable<QBMS.Application.Models.SetterAssignmentViewModel>
+        ?? new List<QBMS.Application.Models.SetterAssignmentViewModel>();
+    string mode = ViewBag.Mode as string;
+    bool showExcel = mode != "word";
+    bool showWord = mode != "excel";
+
+    // Exam - Paper - Section - SubSection - Topic, only the levels the assignment covers
+    Func<QBMS.Application.Models.SetterAssignmentViewModel, string> label = a =>
+    {
+        var level = (a.AssignmentLevel ?? "").ToUpperInvariant();
+        var parts = new List<string> { a.ExamName };
+        if (level == "PAPER" || level == "SECTION" || level == "SUBSECTION" || level == "TOPIC") { parts.Add(a.PaperName); }
+        if (level == "SECTION" || level == "SUBSECTION" || level == "TOPIC") { parts.Add(a.SectionName); }
+        if (level == "SUBSECTION" || level == "TOPIC") { parts.Add(a.SubsectionName); }
+        if (level == "TOPIC") { parts.Add(a.TopicName); }
+        return string.Join(" - ", parts.Where(x => !string.IsNullOrWhiteSpace(x)));
+    };
+}
+
+<div class="container mt-4">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Template Download &amp; Question Upload</h4>
+            <a asp-action="Dashboard" class="btn btn-secondary btn-sm">Back to Dashboard</a>
+        </div>
+
+        <div class="card-body">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            <div class="alert alert-info">
+                Download the Excel (.xlsx) or Word (.doc) template for an assigned exam, fill only Question text, Options and Correct Answer
+                (keep every prefilled column, including QB_Maker, unchanged) and upload it in the Upload section.
+                After upload the file goes through a duplicate check; track it on the Setter Dashboard. Questions are saved and sent to the Vetter
+                only if the whole file clears the check and fits your remaining quota.
+            </div>
+
+            @* =========================== PART 1 : DOWNLOAD =========================== *@
+            <section class="upload-part" id="downloadSection">
+                <h5 class="upload-part-title">1. Download template</h5>
+
+                <form asp-action="DownloadTosExcelTemplate"
+                      asp-controller="Setter"
+                      method="get">
+                    <div class="form-group">
+                        <label>Assignment (exam)</label>
+                        <select name="assignmentId" class="form-control" required>
+                            <option value="">-- Select Assignment --</option>
+                            @foreach (var assignment in assignmentList)
+                            {
+                                <option value="@assignment.AssignmentId" selected="@(assignment.AssignmentId == Model.AssignmentId)">@label(assignment)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mt-3 d-flex" style="gap:10px;flex-wrap:wrap;">
+                        <button type="submit" class="btn btn-success">Download Excel Template (.xlsx)</button>
+                        <button type="submit"
+                                class="btn btn-success"
+                                formaction="@Url.Action("DownloadTosWordTemplate", "Setter")">
+                            Download Word Template (.doc)
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            @* =========================== PART 2 : UPLOAD =========================== *@
+            <section class="upload-part" id="uploadSection">
+                <h5 class="upload-part-title">2. Upload completed template</h5>
+
+                @if (mode != null)
+                {
+                    <p class="form-hint">
+                        Showing the @(mode == "excel" ? "Excel" : "Word") upload only.
+                        <a asp-action="UploadQuestions" asp-route-assignmentId="@Model.AssignmentId">Show both upload forms</a>
+                    </p>
+                }
+
+                @if (showExcel)
+                {
+                    <form asp-action="UploadQuestions" asp-controller="Setter" method="post" enctype="multipart/form-data" class="border rounded p-3 mb-4">
+                        @Html.AntiForgeryToken()
+                        <h6>Excel (.xlsx)</h6>
+                        <div class="form-group">
+                            <label>Assignment (exam)</label>
+                            <select name="assignmentId" class="form-control" required>
+                                <option value="">-- Select Assignment --</option>
+                                @foreach (var assignment in assignmentList)
+                                {
+                                    <option value="@assignment.AssignmentId" selected="@(assignment.AssignmentId == Model.AssignmentId)">@label(assignment)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Select Excel file</label>
+                            <input type="file" name="file" class="form-control" accept=".xlsx" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Upload Excel Questions</button>
+                    </form>
+                }
+
+                @if (showWord)
+                {
+                    <form asp-action="UploadWordQuestions"
+                          asp-controller="Setter"
+                          method="post"
+                          enctype="multipart/form-data"
+                          class="border rounded p-3 mb-2">
+                        @Html.AntiForgeryToken()
+                        <h6>Word (.doc)</h6>
+                        <div class="form-group">
+                            <label>Assignment (exam)</label>
+                            <select name="assignmentId" class="form-control" required>
+                                <option value="">-- Select Assignment --</option>
+                                @foreach (var assignment in assignmentList)
+                                {
+                                    <option value="@assignment.AssignmentId" selected="@(assignment.AssignmentId == Model.AssignmentId)">@label(assignment)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label>Select Word file</label>
+                            <input type="file" name="uploadedFile" class="form-control" accept=".doc" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Upload Word Questions</button>
+                    </form>
+                }
+            </section>
+
+            @if (Model != null &&
+                Model.Errors != null &&
+                Model.Errors.Count > 0)
+            {
+                <div class="alert alert-danger mt-4">
+
+                    @foreach (var error in Model.Errors)
+                    {
+                        <div>@error</div>
+                    }
+
+                </div>
+            }
+
+            @if (Model != null &&
+                Model.Questions != null &&
+                Model.Questions.Count > 0)
+            {
+                <div class="mt-4">
+
+                    <h5>Upload Preview</h5>
+
+                    <div class="mb-3">
+                        <strong>Total:</strong>
+                        @Model.TotalRows
+
+                        &nbsp;&nbsp;
+
+                        <strong>Valid:</strong>
+                        @Model.ValidRows
+
+                        &nbsp;&nbsp;
+
+                        <strong>Invalid:</strong>
+                        @Model.InvalidRows
+                    </div>
+
+                    <table class="table table-bordered">
+
+                        <thead>
+                            <tr>
+                                <th>Row</th>
+                                <th>Question</th>
+                                <th>Type</th>
+                                <th>Difficulty</th>
+                                <th>Status</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item
+                               in Model.Questions)
+                            {
+                                <tr>
+
+                                    <td>@item.RowNumber</td>
+
+                                    <td class="question-html">
+                                        @Html.Raw(item.QuestionHtml ?? System.Net.WebUtility.HtmlEncode(item.QuestionText ?? ""))
+                                    </td>
+
+                                    <td>
+                                        @item.QuestionType
+                                    </td>
+
+                                    <td>
+                                        @item.DifficultyLevel
+                                    </td>
+
+                                    <td>
+                                        @if (item.IsValid)
+                                        {
+                                            <span class="text-success">
+                                                Valid
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">
+                                                Invalid
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @item.ErrorMessage
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+@* Equations from the Word equation editor arrive as LaTeX (\( ... \)); render them like the question editor does. *@
+<style>
+    .question-html img { max-width: 100%; height: auto; vertical-align: middle; }
+</style>
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['\\(', '\\)']],
+            displayMath: [['\\[', '\\]']],
+            processEscapes: true
+        },
+        options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] },
+        startup: { typeset: false }
+    };
+</script>
+<script src="~/lib/MathJax-3.2.2/es5/tex-chtml.js"></script>
+<script>
+    window.addEventListener('load', function () {
+        if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+            window.MathJax.typesetPromise(Array.prototype.slice.call(document.querySelectorAll('.question-html')));
+        }
+    });
+</script>

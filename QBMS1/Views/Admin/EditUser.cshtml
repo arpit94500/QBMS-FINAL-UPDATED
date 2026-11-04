@@ -1,0 +1,175 @@
+﻿@model QBMS.Application.Models.EditUserViewModel
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+
+        <div>
+            <h1>Edit User</h1>
+
+            <p>
+                Update the role or status, or reset the password.
+            </p>
+        </div>
+
+        <div>
+            <a asp-controller="Admin"
+               asp-action="UserManagement"
+               class="back-button">
+                Back
+            </a>
+        </div>
+
+    </div>
+
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="success-message">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="error-message">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <div class="assignment-panel">
+
+        <form asp-controller="Admin"
+              asp-action="EditUser"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="UserId" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="error-message">
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Personnel No
+                </label>
+
+                <input asp-for="PersonnelNo"
+                       class="qbms-input"
+                       readonly />
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    User Name
+                </label>
+
+                <input asp-for="UserName"
+                       class="qbms-input"
+                       readonly />
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Role
+                </label>
+
+                <select asp-for="RoleId"
+                        class="qbms-select"
+                        required>
+
+                    <option value="0">
+                        Select Role
+                    </option>
+
+                    @if (Model.Roles != null)
+                    {
+                        foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.Id">@role.Name</option>
+                        }
+                    }
+
+                </select>
+
+                <span asp-validation-for="RoleId"
+                      class="error-message">
+                </span>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+
+                    <input asp-for="IsActive" />
+
+                    Active
+
+                </label>
+
+            </div>
+
+
+            <button type="submit"
+                    class="sync-button">
+
+                Save Changes
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="assignment-panel reset-panel">
+
+        <h3>Reset Password</h3>
+
+        <p class="form-hint">
+            Sets the password back to the default
+            (<strong>@ViewBag.DefaultPassword</strong>).
+            The user will be asked to choose a new password at next login.
+        </p>
+
+        <form asp-controller="Admin"
+              asp-action="ResetUserPassword"
+              method="post"
+              onsubmit="return confirm('Reset this user\'s password to the default password?');">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="userId"
+                   value="@Model.UserId" />
+
+            <button type="submit"
+                    class="assign-button">
+
+                Reset Password
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
